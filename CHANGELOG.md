@@ -37,6 +37,12 @@ The `--bundle` form of *Verify the provenance of an asset* passes
 `--signer-workflow "$signer"`, without which `gh attestation verify` refuses
 a good release (closes btclib-org/.github#1446).
 
+### `.clusterfuzzlite/.python-version` pins the fuzz image's interpreter
+
+`.clusterfuzzlite/.python-version` names `3.11`, the fuzz image's interpreter,
+so that the Dependency Graph's pip job there reads it rather than a root pin
+Dependabot does not support yet (issue btclib-org/.github#1436).
+
 ## v2026.9.29
 
 ### The repository opens
