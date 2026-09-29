@@ -43,6 +43,12 @@ a good release (closes btclib-org/.github#1446).
 so that the Dependency Graph's pip job there reads it rather than a root pin
 Dependabot does not support yet (issue btclib-org/.github#1436).
 
+### `RELEASING.md`'s griffe step searches `src`
+
+`griffe check` takes `-s . -s src`, the pair `release.yml`'s `public-api`
+job passes, where it answered `ModuleNotFoundError` for the previous
+release (issue btclib-org/.github#1447).
+
 ## v2026.9.29
 
 ### The repository opens
