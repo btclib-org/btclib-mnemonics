@@ -1,0 +1,55 @@
+---
+name: Bug report
+description: Something in btclib-mnemonics does not work as documented
+labels: [bug]
+
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happens
+      description: What you observed, and what you expected instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to reproduce it
+      description: >
+        The shortest Python that shows it, and the full traceback if there
+        is one. The values that trigger it matter: paste the actual
+        entropy, word list and share parameters, and never a mnemonic, a
+        share or a passphrase that guards funds.
+      render: python
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: btclib-mnemonics version
+      description: >
+        `python -c "from importlib.metadata import version;
+        print(version('btclib-mnemonics'))"`
+      placeholder: "2026.10"
+    validations:
+      required: true
+
+  - type: input
+    id: platform
+    attributes:
+      label: Platform and interpreter
+      description: >
+        `python -VV` and the operating system, architecture included.
+      placeholder: "CPython 3.14.0, macOS 26.0 arm64"
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else
+      description: >
+        The standard or specification the behaviour should follow, a test
+        vector it disagrees with, and the version this last worked on.

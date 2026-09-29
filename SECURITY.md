@@ -1,0 +1,76 @@
+# Security policy
+
+## Reporting a vulnerability
+
+If you have found a security vulnerability, please do not open a GitHub
+issue: an issue is public from the moment it is filed, and so is the
+window between filing it and a fix being released.
+
+Report it privately instead, by
+[opening a security advisory](https://github.com/btclib-org/btclib-mnemonics/security/advisories/new).
+Only the maintainers can see it, the discussion stays private until an
+advisory is published, and a CVE can be requested from it if the
+vulnerability warrants one.
+
+If you have no GitHub account, or would rather not use it for this,
+responsible disclosure by email to *security at btclib dot org* is
+equally welcome.
+
+## What belongs here
+
+Everything this package does: turning entropy into a sentence and a
+sentence back into entropy, the seed or master secret a sentence
+stretches to, the SLIP-0039 splitting and recombination of a secret, the
+recognition of which scheme a sentence belongs to, the word lists it
+ships, and the distributions published to PyPI and their provenance.
+
+A master key derived from a seed is not here: `btclib-wallet` is where
+BIP32 is. Report a flaw wherever you found it, though: routing a report
+is the maintainers' job, not the reporter's, and a doubt about which
+project owns a flaw is not a reason to keep it to yourself.
+
+## Supported versions
+
+Only the latest release is supported. Versions are calendar-based
+(`YYYY.M.D`), a fix is published as a new release, and nothing is
+backported.
+
+Wheels and sdist are published to PyPI with PEP 740 attestations, through
+a workflow that no long-lived token can authenticate for (PyPI Trusted
+Publishing), so a distribution can be traced back to the workflow run and
+the commit it was built from.
+
+The same files are attached to the GitHub release, and those copies carry
+a build provenance attestation of their own, signed in the run that built
+them:
+
+```shell
+gh attestation verify --repo btclib-org/btclib-mnemonics \
+  --signer-workflow btclib-org/.github/.github/workflows/reusable-attest.yml \
+  <a distribution file from the release>
+```
+
+`--signer-workflow` is what makes that say which workflow signed, rather
+than accepting any attestation this repository has: the signing runs in
+`btclib-org/.github`'s `reusable-attest.yml`, which `release.yml` calls.
+A CycloneDX bill of materials is attached beside them, generated from the
+built wheel and covered by the same attestation. Either distribution file
+can also be rebuilt from its tag and compared, the build being
+reproducible: RELEASING.md has that command.
+
+## Limitations, not vulnerabilities
+
+These are known and inherent. They are worth stating because this
+package is used to teach and to prototype as much as to build:
+
+- **Secret material lives in Python objects**, which are immutable and
+    not zeroized: a mnemonic, an entropy, a seed or a share stays in the
+    process memory until garbage collection, and may have been copied by
+    the interpreter meanwhile.
+- **Nothing here is constant-time.** The package is pure Python, and a
+    word list is indexed by the secret's own digits.
+- **Randomness comes from the operating system** through the `secrets`
+    module, and nothing here seeds a generator of its own.
+- **`entropy.collect_rolls` is interactive**, reading dice rolls with
+    `input()` and reporting with `print()`: whatever the terminal keeps,
+    it keeps.

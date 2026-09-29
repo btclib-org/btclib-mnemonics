@@ -1,0 +1,149 @@
+# Copyright (c) The btclib developers
+# Distributed under the MIT software license, see the accompanying
+# LICENSE file or https://opensource.org/license/mit for the full text.
+
+"""A fuzz/corpus/ seed is still a sentence one of its entry points reads.
+
+`fuzz/fuzz_<name>.py` and `fuzz/corpus/fuzz_<name>/` are read from disk;
+neither is imported. Every harness imports atheris at module level,
+which is CI-only and undeclared in `[dependency-groups]`, so this module
+never runs `import fuzz.fuzz_<name>` and never executes a harness's own
+code -- it parses the source with `ast` and resolves what a harness
+*names* against the installed package instead.
+
+`ENTRY_POINTS`, a module-level tuple of `"module:name"` string literals,
+is what each harness names, and what `fuzz_target`'s own body calls is
+asked to be exactly that. Every seed is then tried against every entry
+point, and passes if at least one reads it without raising
+`BTClibMnemonicsException`; a seed the SLIP-0039 decoder reads has to
+encode back to its own bytes.
+
+What this gate is for is keeping the fuzzer's own starting point honest
+as the decoders move under it. A crash the fuzzer finds is a test of the
+ordinary suite, naming the input and what the decoder now does with it,
+and never a seed: this gate would refuse a crash input added here.
+"""
+
+from __future__ import annotations
+
+import ast
+import importlib
+from pathlib import Path
+from typing import Any
+
+import pytest
+
+from btclib_mnemonics import slip39
+from btclib_mnemonics.exceptions import BTClibMnemonicsException
+
+_FUZZ = Path(__file__).parent.parent / "fuzz"
+_CORPUS = _FUZZ / "corpus"
+
+
+def _harness_paths() -> tuple[Path, ...]:
+    """Every fuzz/fuzz_*.py, sorted for a stable parametrize order."""
+    return tuple(sorted(_FUZZ.glob("fuzz_*.py")))
+
+
+def _tree(path: Path) -> ast.Module:
+    return ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+
+
+def _entry_points(tree: ast.Module) -> tuple[str, ...]:
+    """Return the one module-level ENTRY_POINTS tuple of strings."""
+    (value,) = (
+        ast.literal_eval(node.value)
+        for node in tree.body
+        if isinstance(node, ast.Assign)
+        and len(node.targets) == 1
+        and isinstance(node.targets[0], ast.Name)
+        and node.targets[0].id == "ENTRY_POINTS"
+    )
+    assert isinstance(value, tuple)
+    assert all(isinstance(v, str) for v in value)
+    return value
+
+
+def _called(tree: ast.Module) -> set[str]:
+    """Every `module.function(...)` call `fuzz_target`'s body makes.
+
+    As "package.module:function", the module resolved through the
+    `from package import module` that binds its name, so a call is
+    compared with a declared entry point in the one spelling both share.
+    """
+    bindings = {
+        alias.asname or alias.name: f"{node.module}.{alias.name}"
+        for node in tree.body
+        if isinstance(node, ast.ImportFrom) and node.module is not None
+        for alias in node.names
+    }
+    (target,) = (
+        node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "fuzz_target"
+    )
+    return {
+        f"{bindings[node.func.value.id]}:{node.func.attr}"
+        for node in ast.walk(target)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and isinstance(node.func.value, ast.Name)
+        and node.func.value.id in bindings
+    }
+
+
+def _resolve(spec: str) -> Any:
+    """Import the callable a "module:name" spec names."""
+    module_name, _, name = spec.partition(":")
+    return getattr(importlib.import_module(module_name), name)
+
+
+def _seed_paths(name: str) -> tuple[Path, ...]:
+    return tuple(sorted((_CORPUS / name).glob("*.bin")))
+
+
+_HARNESSES = _harness_paths()
+_SEEDS = tuple((path, seed) for path in _HARNESSES for seed in _seed_paths(path.stem))
+
+
+def test_the_corpus_is_not_empty() -> None:
+    """Every assertion below quantifies over _HARNESSES and _SEEDS."""
+    assert _HARNESSES, f"{_FUZZ} holds no fuzz_*.py"
+    assert _SEEDS, f"{_CORPUS} holds no seed"
+
+
+def test_every_corpus_directory_has_a_harness_and_back() -> None:
+    """A harness with no seeds, or seeds with no harness, is unchecked."""
+    harnesses = {path.stem for path in _HARNESSES}
+    directories = {d.name for d in _CORPUS.iterdir() if d.is_dir()}
+    assert harnesses == directories
+
+
+@pytest.mark.parametrize("path", _HARNESSES, ids=lambda p: p.stem)
+def test_entry_points_are_what_the_target_calls(path: Path) -> None:
+    """ENTRY_POINTS is declared, resolves, and is what fuzz_target calls."""
+    tree = _tree(path)
+    declared = _entry_points(tree)
+    assert declared, f"{path.name} declares no non-empty ENTRY_POINTS"
+    for spec in declared:
+        assert callable(_resolve(spec)), spec
+    called = _called(tree)
+    assert set(declared) <= called, sorted(set(declared) - called)
+
+
+@pytest.mark.parametrize(
+    "path, seed", _SEEDS, ids=[f"{p.stem}/{s.name}" for p, s in _SEEDS]
+)
+def test_every_seed_is_read(path: Path, seed: Path) -> None:
+    """At least one entry point reads the seed without refusing it."""
+    text = seed.read_bytes().decode("utf-8")
+    read = []
+    for spec in _entry_points(_tree(path)):
+        try:
+            result = _resolve(spec)(text)
+        except BTClibMnemonicsException:
+            continue
+        read.append(spec)
+        if isinstance(result, slip39.Share):
+            assert slip39.mnemonic_from_share(result) == text
+    assert read, f"no entry point of {path.name} reads {seed.name}"

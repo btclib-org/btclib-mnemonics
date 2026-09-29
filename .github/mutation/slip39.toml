@@ -1,0 +1,26 @@
+# SLIP-0039, mutated: the share header, the RS1024 checksum, the GF(256)
+# interpolation and the Feistel network. A mutant that survives here is a
+# share encoded one way and decoded another, or a set of shares that
+# recombines into a secret nobody split.
+
+[cosmic-ray]
+module-path = ["src/btclib_mnemonics/slip39.py"]
+
+test-command = """python -m pytest -x -q -n0 -p no:randomly \
+  tests/slip39_test.py"""
+
+timeout = 300
+
+excluded-modules = []
+
+# every `|` in the module outside its docstring table is a type union: in
+# an annotation its mutant is equivalent under deferred evaluation, and in
+# an `isinstance` it raises TypeError on the first call, which the first
+# test to reach it reports
+#
+#   grep -n ' | ' src/btclib_mnemonics/slip39.py
+[cosmic-ray.filters.operators-filter]
+exclude-operators = ["core/ReplaceBinaryOperator_BitOr_.*"]
+
+[cosmic-ray.distributor]
+name = "local"
