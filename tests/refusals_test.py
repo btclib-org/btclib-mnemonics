@@ -4,11 +4,10 @@
 
 """What a refusal of `btclib_mnemonics` says, and what it does not.
 
-Two properties, both fixed in btclib-wallet before the move and carried
-here with the code. A wrong type leaves as a `BTClibMnemonicsTypeError`
-naming the parameter, not as a builtin raised from underneath the
-package (issue btclib-org/btclib-wallet#134) nor as a value refusal
-(issue btclib-org/btclib-wallet#136): these are the calls
+A wrong type leaves as a `BTClibMnemonicsTypeError` naming the
+parameter, not as a builtin raised from underneath the package (issue
+btclib-org/btclib-wallet#134) nor as a value refusal (issue
+btclib-org/btclib-wallet#136): these are the calls
 `tests/input_validation_test.py`'s walk does not reach, each taking a
 plain `str`, `int` or sequence of them, or being a method. And no
 refusal quotes secret material -- a word of the sentence, a checksum, a

@@ -329,6 +329,143 @@ wheels = [
 ]
 
 [[package]]
+name = "btclib-mnemonics"
+version = "2026.9.29"
+source = { editable = "." }
+
+[package.dev-dependencies]
+check = [
+    { name = "check-sdist" },
+    { name = "check-wheel-contents" },
+    { name = "pyroma" },
+    { name = "twine" },
+    { name = "uv-build" },
+]
+dev = [
+    { name = "btclib" },
+    { name = "btclib-ecc" },
+    { name = "check-sdist" },
+    { name = "check-wheel-contents" },
+    { name = "cosmic-ray" },
+    { name = "coverage" },
+    { name = "furo", marker = "python_full_version >= '3.12'" },
+    { name = "hypothesis" },
+    { name = "mypy" },
+    { name = "myst-parser", marker = "python_full_version >= '3.12'" },
+    { name = "pre-commit" },
+    { name = "pyroma" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "pytest-randomly" },
+    { name = "pytest-xdist" },
+    { name = "ruff" },
+    { name = "sphinx", marker = "python_full_version >= '3.12'" },
+    { name = "twine" },
+    { name = "typing-extensions" },
+    { name = "uv-build" },
+]
+docs = [
+    { name = "furo", marker = "python_full_version >= '3.12'" },
+    { name = "myst-parser", marker = "python_full_version >= '3.12'" },
+    { name = "sphinx", marker = "python_full_version >= '3.12'" },
+]
+fuzz = [
+    { name = "uv-build" },
+]
+harness = [
+    { name = "coverage" },
+    { name = "hypothesis" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "pytest-randomly" },
+    { name = "pytest-xdist" },
+]
+lint = [
+    { name = "mypy" },
+    { name = "pre-commit" },
+    { name = "ruff" },
+]
+mutation = [
+    { name = "cosmic-ray" },
+]
+test = [
+    { name = "btclib" },
+    { name = "btclib-ecc" },
+    { name = "coverage" },
+    { name = "hypothesis" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "pytest-randomly" },
+    { name = "pytest-xdist" },
+    { name = "typing-extensions" },
+]
+
+[package.metadata]
+
+[package.metadata.requires-dev]
+check = [
+    { name = "check-sdist", specifier = ">=1.6.0" },
+    { name = "check-wheel-contents", specifier = ">=0.6.3" },
+    { name = "pyroma", specifier = ">=5.0.1" },
+    { name = "twine", specifier = ">=7.0.0" },
+    { name = "uv-build", specifier = ">=0.12.0,<0.13" },
+]
+dev = [
+    { name = "btclib", specifier = ">=2026.9.29" },
+    { name = "btclib-ecc", specifier = ">=2026.9.28" },
+    { name = "check-sdist", specifier = ">=1.6.0" },
+    { name = "check-wheel-contents", specifier = ">=0.6.3" },
+    { name = "cosmic-ray", specifier = ">=8.7.0" },
+    { name = "coverage", specifier = ">=7.16.1" },
+    { name = "furo", marker = "python_full_version >= '3.12'", specifier = ">=2025.12.19" },
+    { name = "hypothesis", specifier = ">=6.168.1" },
+    { name = "mypy", specifier = ">=2.3.1" },
+    { name = "myst-parser", marker = "python_full_version >= '3.12'", specifier = ">=5.1.0" },
+    { name = "pre-commit", specifier = ">=4.6.2" },
+    { name = "pyroma", specifier = ">=5.0.1" },
+    { name = "pytest", specifier = ">=9.1.1" },
+    { name = "pytest-cov", specifier = ">=7.1.0" },
+    { name = "pytest-randomly", specifier = ">=5.0.0" },
+    { name = "pytest-xdist", specifier = ">=3.8.0" },
+    { name = "ruff", specifier = ">=0.16.9" },
+    { name = "sphinx", marker = "python_full_version >= '3.12'", specifier = ">=9.1.0" },
+    { name = "twine", specifier = ">=7.0.0" },
+    { name = "typing-extensions", specifier = ">=4.4" },
+    { name = "uv-build", specifier = ">=0.12.0,<0.13" },
+]
+docs = [
+    { name = "furo", marker = "python_full_version >= '3.12'", specifier = ">=2025.12.19" },
+    { name = "myst-parser", marker = "python_full_version >= '3.12'", specifier = ">=5.1.0" },
+    { name = "sphinx", marker = "python_full_version >= '3.12'", specifier = ">=9.1.0" },
+]
+fuzz = [{ name = "uv-build", specifier = ">=0.12.0,<0.13" }]
+harness = [
+    { name = "coverage", specifier = ">=7.16.1" },
+    { name = "hypothesis", specifier = ">=6.168.1" },
+    { name = "pytest", specifier = ">=9.1.1" },
+    { name = "pytest-cov", specifier = ">=7.1.0" },
+    { name = "pytest-randomly", specifier = ">=5.0.0" },
+    { name = "pytest-xdist", specifier = ">=3.8.0" },
+]
+lint = [
+    { name = "mypy", specifier = ">=2.3.1" },
+    { name = "pre-commit", specifier = ">=4.6.2" },
+    { name = "ruff", specifier = ">=0.16.9" },
+]
+mutation = [{ name = "cosmic-ray", specifier = ">=8.7.0" }]
+test = [
+    { name = "btclib", specifier = ">=2026.9.29" },
+    { name = "btclib-ecc", specifier = ">=2026.9.28" },
+    { name = "coverage", specifier = ">=7.16.1" },
+    { name = "hypothesis", specifier = ">=6.168.1" },
+    { name = "pytest", specifier = ">=9.1.1" },
+    { name = "pytest-cov", specifier = ">=7.1.0" },
+    { name = "pytest-randomly", specifier = ">=5.0.0" },
+    { name = "pytest-xdist", specifier = ">=3.8.0" },
+    { name = "typing-extensions", specifier = ">=4.4" },
+]
+
+[[package]]
 name = "build"
 version = "1.6.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1431,143 +1568,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/d6/54/cfe61301667036ec958cb99bd3efefba235e65cdeb9c84d24a8293ba1d90/mdurl-0.1.2.tar.gz", hash = "sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba", size = 8729, upload-time = "2022-08-14T12:40:10.846Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b3/38/89ba8ad64ae25be8de66a6d463314cf1eb366222074cfda9ee839c56a4b4/mdurl-0.1.2-py3-none-any.whl", hash = "sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8", size = 9979, upload-time = "2022-08-14T12:40:09.779Z" },
-]
-
-[[package]]
-name = "btclib-mnemonics"
-version = "2026.10"
-source = { editable = "." }
-
-[package.dev-dependencies]
-check = [
-    { name = "check-sdist" },
-    { name = "check-wheel-contents" },
-    { name = "pyroma" },
-    { name = "twine" },
-    { name = "uv-build" },
-]
-dev = [
-    { name = "btclib" },
-    { name = "btclib-ecc" },
-    { name = "check-sdist" },
-    { name = "check-wheel-contents" },
-    { name = "cosmic-ray" },
-    { name = "coverage" },
-    { name = "furo", marker = "python_full_version >= '3.12'" },
-    { name = "hypothesis" },
-    { name = "mypy" },
-    { name = "myst-parser", marker = "python_full_version >= '3.12'" },
-    { name = "pre-commit" },
-    { name = "pyroma" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "pytest-randomly" },
-    { name = "pytest-xdist" },
-    { name = "ruff" },
-    { name = "sphinx", marker = "python_full_version >= '3.12'" },
-    { name = "twine" },
-    { name = "typing-extensions" },
-    { name = "uv-build" },
-]
-docs = [
-    { name = "furo", marker = "python_full_version >= '3.12'" },
-    { name = "myst-parser", marker = "python_full_version >= '3.12'" },
-    { name = "sphinx", marker = "python_full_version >= '3.12'" },
-]
-fuzz = [
-    { name = "uv-build" },
-]
-harness = [
-    { name = "coverage" },
-    { name = "hypothesis" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "pytest-randomly" },
-    { name = "pytest-xdist" },
-]
-lint = [
-    { name = "mypy" },
-    { name = "pre-commit" },
-    { name = "ruff" },
-]
-mutation = [
-    { name = "cosmic-ray" },
-]
-test = [
-    { name = "btclib" },
-    { name = "btclib-ecc" },
-    { name = "coverage" },
-    { name = "hypothesis" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "pytest-randomly" },
-    { name = "pytest-xdist" },
-    { name = "typing-extensions" },
-]
-
-[package.metadata]
-
-[package.metadata.requires-dev]
-check = [
-    { name = "check-sdist", specifier = ">=1.6.0" },
-    { name = "check-wheel-contents", specifier = ">=0.6.3" },
-    { name = "pyroma", specifier = ">=5.0.1" },
-    { name = "twine", specifier = ">=7.0.0" },
-    { name = "uv-build", specifier = ">=0.12.0,<0.13" },
-]
-dev = [
-    { name = "btclib", specifier = ">=2026.9.29" },
-    { name = "btclib-ecc", specifier = ">=2026.9.28" },
-    { name = "check-sdist", specifier = ">=1.6.0" },
-    { name = "check-wheel-contents", specifier = ">=0.6.3" },
-    { name = "cosmic-ray", specifier = ">=8.7.0" },
-    { name = "coverage", specifier = ">=7.16.1" },
-    { name = "furo", marker = "python_full_version >= '3.12'", specifier = ">=2025.12.19" },
-    { name = "hypothesis", specifier = ">=6.168.1" },
-    { name = "mypy", specifier = ">=2.3.1" },
-    { name = "myst-parser", marker = "python_full_version >= '3.12'", specifier = ">=5.1.0" },
-    { name = "pre-commit", specifier = ">=4.6.2" },
-    { name = "pyroma", specifier = ">=5.0.1" },
-    { name = "pytest", specifier = ">=9.1.1" },
-    { name = "pytest-cov", specifier = ">=7.1.0" },
-    { name = "pytest-randomly", specifier = ">=5.0.0" },
-    { name = "pytest-xdist", specifier = ">=3.8.0" },
-    { name = "ruff", specifier = ">=0.16.9" },
-    { name = "sphinx", marker = "python_full_version >= '3.12'", specifier = ">=9.1.0" },
-    { name = "twine", specifier = ">=7.0.0" },
-    { name = "typing-extensions", specifier = ">=4.4" },
-    { name = "uv-build", specifier = ">=0.12.0,<0.13" },
-]
-docs = [
-    { name = "furo", marker = "python_full_version >= '3.12'", specifier = ">=2025.12.19" },
-    { name = "myst-parser", marker = "python_full_version >= '3.12'", specifier = ">=5.1.0" },
-    { name = "sphinx", marker = "python_full_version >= '3.12'", specifier = ">=9.1.0" },
-]
-fuzz = [{ name = "uv-build", specifier = ">=0.12.0,<0.13" }]
-harness = [
-    { name = "coverage", specifier = ">=7.16.1" },
-    { name = "hypothesis", specifier = ">=6.168.1" },
-    { name = "pytest", specifier = ">=9.1.1" },
-    { name = "pytest-cov", specifier = ">=7.1.0" },
-    { name = "pytest-randomly", specifier = ">=5.0.0" },
-    { name = "pytest-xdist", specifier = ">=3.8.0" },
-]
-lint = [
-    { name = "mypy", specifier = ">=2.3.1" },
-    { name = "pre-commit", specifier = ">=4.6.2" },
-    { name = "ruff", specifier = ">=0.16.9" },
-]
-mutation = [{ name = "cosmic-ray", specifier = ">=8.7.0" }]
-test = [
-    { name = "btclib", specifier = ">=2026.9.29" },
-    { name = "btclib-ecc", specifier = ">=2026.9.28" },
-    { name = "coverage", specifier = ">=7.16.1" },
-    { name = "hypothesis", specifier = ">=6.168.1" },
-    { name = "pytest", specifier = ">=9.1.1" },
-    { name = "pytest-cov", specifier = ">=7.1.0" },
-    { name = "pytest-randomly", specifier = ">=5.0.0" },
-    { name = "pytest-xdist", specifier = ">=3.8.0" },
-    { name = "typing-extensions", specifier = ">=4.4" },
 ]
 
 [[package]]
