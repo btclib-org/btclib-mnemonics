@@ -21,12 +21,10 @@ them.
 
 Each section carries the command that sets its setting and the command
 that reads it back, and the `#` lines under a read-back are what it
-printed at section 16's last step. That step waits for the first push to
-`main`, so every read-back below reads `# pending` until it is run and
-its answers written in with the date. Section 11 makes such an answer
-documentation, with a reader as its check: nothing re-runs these
-commands, so an answer that differs later is a change made since the
-date it carries.
+printed on 2026-09-29 — section 16's last step — unless a later date
+stands beside it. Section 11 makes such an answer documentation, with a
+reader as its check: nothing re-runs these commands, so an answer that
+differs today is a change made since that date.
 
 ## Creating the repository
 
@@ -74,13 +72,14 @@ Read back:
 gh api repos/btclib-org/btclib-mnemonics \
   --jq '{visibility, default_branch: .default_branch, has_issues,
          wiki: .has_wiki, projects: .has_projects}'
-# pending
+# {"default_branch":"main","has_issues":true,"projects":false,
+#  "visibility":"public","wiki":false}
 gh api -i repos/btclib-org/btclib-mnemonics/pages 2>/dev/null | head -1
-# pending
+# HTTP/2.0 404 Not Found
 ```
 
 `has_issues` is what `CONTRIBUTING.md`'s *The issue tracker* rests on,
-and so does `.github/ISSUE_TEMPLATE/`. The Pages call is to answer `404`: this
+and so does `.github/ISSUE_TEMPLATE/`. The Pages call answers `404`: this
 tree serves no GitHub Pages site, and a recorded `404` is what makes a
 later flip visible. It asks for the status line alone, the error body
 being the endpoint's generic `Not Found` document.
@@ -174,7 +173,14 @@ gh api repos/btclib-org/btclib-mnemonics/branches/main/protection \
          force_pushes: .allow_force_pushes.enabled,
          deletions: .allow_deletions.enabled,
          conversation: .required_conversation_resolution.enabled}'
-# pending
+# {"checks":[["test: every job passed",15368],
+#   ["docs / Build the documentation",15368],
+#   ["lint / Lint and type-check",15368]],
+#  "conversation":true,"deletions":false,"enforce_admins":false,
+#  "force_pushes":false,"linear":true,
+#  "reviews":{"dismiss_stale_reviews":true,
+#   "required_approving_review_count":1},
+#  "strict":true}
 ```
 
 Three rulesets sit beside it, additive — rules aggregate across rulesets
@@ -222,7 +228,7 @@ Classic protection's own copy of the signature rule is off:
 ```shell
 gh api repos/btclib-org/btclib-mnemonics/branches/main/protection \
   --jq '.required_signatures.enabled'
-# pending
+# false
 ```
 
 `main-integrity` above is what requires a signature on `main`: [the
@@ -257,7 +263,16 @@ for id in $(gh api repos/btclib-org/btclib-mnemonics/rulesets --jq '.[].id'); do
            methods: [.rules[] | select(.type=="pull_request")
                               | .parameters.allowed_merge_methods]}'
 done
-# pending
+# {"bypass":[],"enforcement":"active","include":["refs/heads/main"],
+#  "methods":[],"name":"main-integrity",
+#  "rules":["required_signatures","required_linear_history",
+#   "non_fast_forward","deletion"],"target":"branch"}
+# {"bypass":[[3296421,"pull_request"]],"enforcement":"active",
+#  "include":["refs/heads/main"],"methods":[["squash"]],
+#  "name":"main-self-merge","rules":["pull_request"],"target":"branch"}
+# {"bypass":[],"enforcement":"active","include":["refs/tags/v*"],
+#  "methods":[],"name":"tag-integrity","rules":["required_signatures"],
+#  "target":"tag"}
 ```
 
 ## Merge methods
@@ -271,7 +286,11 @@ gh api repos/btclib-org/btclib-mnemonics \
   --jq '{allow_squash_merge, allow_merge_commit, allow_rebase_merge,
          allow_auto_merge, squash_merge_commit_title,
          squash_merge_commit_message, delete_branch_on_merge}'
-# pending
+# {"allow_auto_merge":true,"allow_merge_commit":false,
+#  "allow_rebase_merge":false,"allow_squash_merge":true,
+#  "delete_branch_on_merge":true,
+#  "squash_merge_commit_message":"COMMIT_MESSAGES",
+#  "squash_merge_commit_title":"COMMIT_OR_PR_TITLE"}
 ```
 
 `COMMIT_OR_PR_TITLE` is the subject: the pull request title with its
@@ -309,7 +328,8 @@ value it gets:
 ```shell
 gh api repos/btclib-org/btclib-mnemonics/actions/permissions/workflow \
   --jq '{default_workflow_permissions, can_approve_pull_request_reviews}'
-# pending
+# {"can_approve_pull_request_reviews":false,
+#  "default_workflow_permissions":"read"}
 ```
 
 The expected answer is `read` and `false`. Where it is not, the
@@ -323,10 +343,10 @@ Read for this repository and for the organization:
 ```shell
 gh api repos/btclib-org/btclib-mnemonics/actions/permissions \
   --jq '{allowed_actions, sha_pinning_required}'
-# pending
+# {"allowed_actions":"all","sha_pinning_required":true}
 gh api orgs/btclib-org/actions/permissions \
   --jq '{allowed_actions, sha_pinning_required}'
-# pending
+# {"allowed_actions":"all","sha_pinning_required":true}
 ```
 
 `sha_pinning_required` is set at the organization level: [section 11 of
@@ -374,27 +394,35 @@ gh api repos/btclib-org/btclib-mnemonics/environments \
   --jq '.environments[] | {name, dbp: .deployment_branch_policy,
          rules: [.protection_rules[] | .type],
          reviewers: [.protection_rules[].reviewers[]?.reviewer.login]}'
-# pending
+# {"dbp":{"custom_branch_policies":true,"protected_branches":false},
+#  "name":"pypi",
+#  "reviewers":["fametrano","giacomocaironi","pmazzocchi"],
+#  "rules":["required_reviewers","branch_policy"]}
+# {"dbp":null,"name":"testpypi",
+#  "reviewers":["fametrano","giacomocaironi","pmazzocchi"],
+#  "rules":["required_reviewers"]}
 env=repos/btclib-org/btclib-mnemonics/environments/pypi
 gh api "$env/deployment-branch-policies" \
   --jq '.branch_policies[] | [.name, .type]'
-# pending
+# ["v*","tag"]
 ```
 
-The two pending publishers `RELEASING.md`'s *One-time setup* names, on
-PyPI and on TestPyPI, are added under the project name
-`btclib-mnemonics`, adding them being an account action and the
-maintainer's. That rests on the maintainer's statement rather than on a
-call: none here reads a pending publisher back, and each index answers
-`404` for the project until its first upload, publisher or not.
+The two trusted publishers `RELEASING.md`'s *One-time setup* names, on
+PyPI and on TestPyPI, are active under the project name
+`btclib-mnemonics`, environment `pypi` and `testpypi` respectively and
+workflow `release.yml` for both, adding them being an account action and
+the maintainer's. That rests on the maintainer's statement rather than on
+a call: none here reads a publisher back. What a call does read is that
+each index holds the project, which it answers `404` for until a first
+upload creates it:
 
 ```shell
 curl -s -o /dev/null -w '%{http_code}\n' \
   https://pypi.org/pypi/btclib-mnemonics/json
-# pending
+# 200
 curl -s -o /dev/null -w '%{http_code}\n' \
   https://test.pypi.org/pypi/btclib-mnemonics/json
-# pending
+# 200
 ```
 
 **The repository's `.homepage` names this tree's own documentation
@@ -403,46 +431,74 @@ than from `pyproject.toml`'s own copy of it:
 
 ```shell
 gh api repos/btclib-org/btclib-mnemonics --jq '.homepage'
-# pending
+# https://btclib-mnemonics.readthedocs.io/
 ```
 
 ## Read the Docs, which is btclib-mnemonics.readthedocs.io
 
-The project is to be imported on
-[readthedocs.org](https://app.readthedocs.org/) from
-`btclib-org/btclib-mnemonics` under the slug `btclib-mnemonics`, which is what
-`release.yml`'s `documented` job and `pyproject.toml`'s `documentation`
-url name, with an automation rule activating each new `v*` tag.
-Importing it is the maintainer's, and until then the `.homepage`
-*Publishing* reads back names a site that answers `404`. The slug is
-what serves the site, and it is not the project's name: renaming the
-slug makes the old one stop answering
-rather than redirect. The project's public API answers without a token:
+The project is imported on [readthedocs.org](https://app.readthedocs.org/)
+from `btclib-org/btclib-mnemonics` under the slug `btclib-mnemonics`, which
+is what `release.yml`'s `documented` job and `pyproject.toml`'s
+`documentation` url name. The slug is what serves the site, and it is not
+the project's name: renaming the slug makes the old one stop answering
+rather than redirect. The `.homepage` *Publishing* reads back is that
+site:
+
+```shell
+curl -sL -o /dev/null -w '%{http_code} %{url_effective}\n' \
+  https://btclib-mnemonics.readthedocs.io/
+# 200 https://btclib-mnemonics.readthedocs.io/en/latest/
+```
+
+The project's public API answers without a token:
 
 ```shell
 p=https://app.readthedocs.org/api/v3/projects/btclib-mnemonics
 curl -s "$p/" | jq -c '{default_branch, repository: .repository.url}'
-# pending
+# {"default_branch":"main",
+#  "repository":"https://github.com/btclib-org/btclib-mnemonics.git"}
+curl -s "$p/" | jq -c '[.programming_language.code, .homepage]'
+# ["py","https://github.com/btclib-org/btclib-mnemonics"]
+diff <(curl -s "$p/" | jq -r '.tags[]' | sort) \
+     <(gh api repos/btclib-org/btclib-mnemonics --jq '.topics[]' | sort)
+# (nothing, exit 0)
+```
+
+The project's tags are the repository's topics, which *Topics* sets, and
+its homepage is the repository rather than the site it serves.
+
+`stable` follows the highest semantic-version tag, so the next release
+changes this answer with nothing here having decided differently. Read
+at 2026-09-29T20:01:03Z:
+
+```shell
 curl -s "$p/versions/?active=true" \
   | jq -c '.results[] | select(.slug == "latest" or .slug == "stable")
            | [.slug, .type, .ref]'
-# pending
+# ["stable","tag","v2026.9.29"]
+# ["latest","branch",null]
+git tag --list 'v*' --sort=version:refname | tail -1
+# v2026.9.29
 ```
 
-Once the project exists, `stable` is still missing from the second
-answer while no `v*` tag exists: Read the Docs takes that version from
-the highest semantic-version tag.
+An automation rule, "Activate each v* release tag", activates each new
+`v*` tag: it matches tags against the custom pattern `^v` and activates
+the version. That is a setting recorded as configured, not read back:
+the API does not expose it, `automation-rules/` answering `404` where an
+endpoint needing a token, such as `redirects/`, answers `401`. That rests
+on the maintainer's statement rather than on a call.
 
-**Neither call fails on a slug nothing holds.** The first reads the
-`404` body, `{"detail":"No Project matches the given query."}`, through
-its filter as a pair of `null`s, and the versions endpoint answers `200`
-with an empty `results`, which the second prints as nothing. The status
+**Neither the `default_branch` call nor the versions call fails on a
+slug nothing holds.** The first reads the `404` body,
+`{"detail":"No Project matches the given query."}`, through its filter
+as a pair of `null`s, and the versions endpoint answers `200` with an
+empty `results`, which the second prints as nothing. The status
 is what tells an absent project from one with nothing active:
 
 ```shell
 curl -s -o /dev/null -w '%{http_code}\n' \
   https://app.readthedocs.org/api/v3/projects/btclib-mnemonics/
-# pending
+# 200
 ```
 
 **What connects the repository to Read the Docs is the organization-wide
@@ -453,9 +509,9 @@ the repository is expected to carry no hook:
 gh api orgs/btclib-org/installations \
   --jq '.installations[] | select(.app_slug == "read-the-docs-community")
         | [.app_slug, .repository_selection]'
-# pending
+# ["read-the-docs-community","all"]
 gh api repos/btclib-org/btclib-mnemonics/hooks --jq length
-# pending
+# 0
 ```
 
 A hook the second command finds is stale and is deleted rather than
@@ -495,17 +551,21 @@ Read back:
 
 ```shell
 gh api repos/btclib-org/btclib-mnemonics --jq '.security_and_analysis'
-# pending
+# {"dependabot_security_updates":{"status":"enabled"},
+#  "secret_scanning":{"status":"enabled"},
+#  "secret_scanning_non_provider_patterns":{"status":"disabled"},
+#  "secret_scanning_push_protection":{"status":"enabled"},
+#  "secret_scanning_validity_checks":{"status":"disabled"}}
 gh api -i repos/btclib-org/btclib-mnemonics/vulnerability-alerts | head -1
-# pending
+# HTTP/2.0 204 No Content
 gh api repos/btclib-org/btclib-mnemonics/automated-security-fixes
-# pending
+# {"enabled":true,"paused":false}
 gh api repos/btclib-org/btclib-mnemonics/private-vulnerability-reporting
-# pending
+# {"enabled":true}
 gh api repos/btclib-org/btclib-mnemonics/code-scanning/default-setup --jq .state
-# pending
+# not-configured
 gh api repos/btclib-org/btclib-mnemonics/code-quality/setup --jq .state
-# pending
+# not-configured
 ```
 
 The alerts endpoint has no body and answers with its status, 204 for
@@ -532,14 +592,15 @@ of its own; the diff is expected empty:
 diff <(gh api repos/btclib-org/btclib-mnemonics --jq '.topics[]' | sort) \
      <(sed -n '/^keywords = \[/,/^]/s/^ *"\(.*\)",$/\1/p' pyproject.toml \
        | sort)
-# pending
+# (nothing, exit 0)
 ```
 
 What the diff compares, the topics as the endpoint returns them:
 
 ```shell
 gh api repos/btclib-org/btclib-mnemonics --jq '.topics'
-# pending
+# ["bip39","bitcoin","dice","electrum","mnemonic","seed-phrase",
+#  "shamir-secret-sharing","slip39"]
 ```
 
 ## Plan-gated settings
@@ -551,7 +612,7 @@ configures, so prose that needs the reasoning — a workflow header,
 
 ```shell
 gh api orgs/btclib-org --jq .plan.name
-# pending
+# free
 ```
 
 [GitHub's own table](https://docs.github.com/en/actions/reference/limits)
@@ -588,9 +649,9 @@ either would be that decision undone:
 
 ```shell
 gh api repos/btclib-org/btclib-mnemonics/actions/secrets --jq .total_count
-# pending
+# 0
 gh api repos/btclib-org/btclib-mnemonics/dependabot/secrets --jq .total_count
-# pending
+# 0
 ```
 
 **A switch this repository does not set.** `claude-review.yml` calls
@@ -601,5 +662,5 @@ store is read too:
 
 ```shell
 gh api repos/btclib-org/btclib-mnemonics/actions/variables --jq .total_count
-# pending
+# 0
 ```
