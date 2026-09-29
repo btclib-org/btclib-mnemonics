@@ -31,6 +31,12 @@ Each read-back carries what it answered on 2026-09-29, and *Read the
 Docs* reads back the imported project, the site it serves and the
 release `stable` points at (issue btclib-org/btclib-wallet#30).
 
+### `RELEASING.md`'s bundle verification names the signer workflow
+
+The `--bundle` form of *Verify the provenance of an asset* passes
+`--signer-workflow "$signer"`, without which `gh attestation verify` refuses
+a good release (closes btclib-org/.github#1446).
+
 ## v2026.9.29
 
 ### The repository opens
