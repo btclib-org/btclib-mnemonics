@@ -25,6 +25,8 @@ driver that would keep both sides' numbers.
 
 ## v2026.10 (work in progress, not released yet)
 
+## v2026.9.29
+
 ### The repository opens
 
 BIP39, SLIP-0039 and Electrum mnemonics, their entropy and the dispatch

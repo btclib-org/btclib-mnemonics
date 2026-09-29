@@ -11,6 +11,8 @@ before upgrading, rather than a digit.
 
 ## v2026.10 (work in progress, not released yet)
 
+## v2026.9.29
+
 The first release of `btclib-mnemonics`: there is no earlier version of
 it to upgrade from.
 
@@ -21,17 +23,22 @@ name at a time:
 
 - **`btclib_wallet.mnemonic`'s own names** -- `WORDLISTS`, `BinStr`,
   `Entropy`, `Mnemonic`, `indexes_from_mnemonic`,
-  `mnemonic_from_indexes`, `normalize_mnemonic` and the entropy
-  functions it re-exported -- are not re-exported by `btclib_mnemonics`,
-  whose root publishes its modules only: import each from the module
-  that defines it, `mnemonic` or `entropy`.
+  `mnemonic_from_indexes`, `normalize_mnemonic` and the three public
+  entropy functions it re-exported, `bin_str_entropy_from_random`,
+  `bin_str_entropy_from_rolls` and `collect_rolls` -- are not
+  re-exported by `btclib_mnemonics`, whose root publishes its modules
+  only: import each from the module that defines it, `mnemonic` or
+  `entropy`. The other seven entropy functions it re-exported are
+  private, each named below.
 - **`bip39.mxprv_from_mnemonic`** is not here: derive the master key
   from `bip39.seed_from_mnemonic`'s seed.
 - **`electrum.mxprv_from_mnemonic`** is not here: derive the master key
   from `electrum.seed_from_mnemonic`'s seed, a function new in this
   package, as the version `electrum.version_from_mnemonic` answers asks.
 - **`electrum.old_master_pub_key_from_mnemonic`** is not here: take the
-  public key of `electrum.old_master_prv_key_from_mnemonic`'s private key.
+  public key of `electrum.old_master_prv_key_from_mnemonic`'s private key,
+  uncompressed and without its `04` prefix, the 128 hexadecimal digits an
+  Electrum wallet file holds.
 - **`slip39.mxprv_from_mnemonics`** is not here: derive the master key
   from `slip39.master_secret_from_mnemonics`'s master secret.
 - **`entropy.bin_str_entropy_from_bytes`** is private: pass the bytes to
