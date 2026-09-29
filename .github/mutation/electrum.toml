@@ -1,0 +1,30 @@
+# Electrum's schemes and the dispatch between the three, mutated: the
+# version prefix, the normalization Electrum hashes, the pre-2.0 decoder,
+# and the order in which a sentence is claimed. A surviving mutant here
+# is a sentence read as another scheme than the wallet that wrote it, or
+# stretched to another seed.
+
+[cosmic-ray]
+module-path = [
+    "src/btclib_mnemonics/dispatch.py",
+    "src/btclib_mnemonics/electrum.py",
+    "src/btclib_mnemonics/mnemonic.py",
+]
+
+test-command = """python -m pytest -x -q -n0 -p no:randomly \
+  tests/dispatch_test.py tests/electrum_test.py tests/mnemonic_test.py"""
+
+timeout = 300
+
+excluded-modules = []
+
+# every `|` in the three modules is in an annotation, whose mutants are
+# equivalent under deferred evaluation
+#
+#   grep -n ' | ' src/btclib_mnemonics/dispatch.py \
+#       src/btclib_mnemonics/electrum.py src/btclib_mnemonics/mnemonic.py
+[cosmic-ray.filters.operators-filter]
+exclude-operators = ["core/ReplaceBinaryOperator_BitOr_.*"]
+
+[cosmic-ray.distributor]
+name = "local"

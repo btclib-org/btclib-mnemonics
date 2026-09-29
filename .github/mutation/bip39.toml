@@ -1,0 +1,30 @@
+# BIP39, mutated: the checksum over the entropy, and the entropy
+# conversions beneath it. A word-list index off by one bit or a checksum
+# comparison that accepts the wrong nibble is a recovery phrase that does
+# not reproduce the wallet it was written down for -- silent on any vector
+# the suite already holds, which is what a surviving mutant names.
+
+[cosmic-ray]
+module-path = [
+    "src/btclib_mnemonics/bip39.py",
+    "src/btclib_mnemonics/entropy.py",
+]
+
+test-command = """python -m pytest -x -q -n0 -p no:randomly \
+  tests/bip39_test.py tests/entropy_test.py"""
+
+timeout = 300
+
+excluded-modules = []
+
+# every `|` in the two modules outside bip39's docstring table is a type
+# union: in an annotation its mutant is equivalent under deferred
+# evaluation, and in a module-level alias it fails the import, which a
+# test is not needed to notice
+#
+#   grep -n ' | ' src/btclib_mnemonics/bip39.py src/btclib_mnemonics/entropy.py
+[cosmic-ray.filters.operators-filter]
+exclude-operators = ["core/ReplaceBinaryOperator_BitOr_.*"]
+
+[cosmic-ray.distributor]
+name = "local"

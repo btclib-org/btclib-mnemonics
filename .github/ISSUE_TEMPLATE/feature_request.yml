@@ -1,0 +1,50 @@
+---
+name: Feature request
+description: Add something to btclib-mnemonics, or change how it works
+labels: [enhancement]
+
+body:
+  - type: markdown
+    attributes:
+      value: >
+        btclib-mnemonics is the mnemonic schemes -- BIP39, SLIP-0039 and
+        Electrum's -- from the entropy to the seed, with the entropy
+        sources they are generated from. What a seed derives to -- a BIP32
+        key, an address, a wallet -- is a library above this one, and not
+        this one.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What is missing
+      description: >
+        What it would let a caller do, and how the call would read.
+    validations:
+      required: true
+
+  - type: input
+    id: reference
+    attributes:
+      label: Specification
+      description: >
+        The standard, BIP, RFC or reference implementation that defines it.
+        What has no specification has no test vectors either, which is the
+        harder half of adding it.
+      placeholder: "SLIP-0039, https://github.com/satoshilabs/slips/blob/master/slip-0039.md"
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it belongs in btclib-mnemonics
+      description: >
+        What cannot be done today with what the package already exposes.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: >
+        Other spellings of the same feature, and what an existing caller
+        would have to change if this were added.
