@@ -25,6 +25,12 @@ driver that would keep both sides' numbers.
 
 ## v2026.10 (work in progress, not released yet)
 
+### `REPOSITORY.md` records what each read-back answers
+
+Each read-back carries what it answered on 2026-09-29, and *Read the
+Docs* reads back the imported project, the site it serves and the
+release `stable` points at (issue btclib-org/btclib-wallet#30).
+
 ## v2026.9.29
 
 ### The repository opens
