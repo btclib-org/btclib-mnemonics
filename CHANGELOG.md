@@ -67,6 +67,12 @@ previous page failed after the wait (issue btclib-org/.github#1458).
 Best Practices badge, section 2 of the organization standard admitting it
 on the same property (issue btclib-org/.github#1460).
 
+### `pypi-install.yml` runs its install through `install_published_release.py`
+
+The retry the entry `pypi-install.yml` retries the install of the version the
+release published describes now runs as btclib-org/.github's
+`install_published_release.py` (issue btclib-org/.github#1458).
+
 ## v2026.9.29
 
 ### The repository opens
