@@ -135,7 +135,8 @@ class WordLists:
     typed with it: the set is open, so a Literal would reject the
     language a caller has just loaded (issue btclib-org/btclib#216).
 
-    Word-lists are loaded only if needed and read only once from disk.
+    Word-lists are loaded only if needed and read only once from disk,
+    unless load_lang is given a file that replaces the registered one.
     Each word is NFKD-normalized as it is read, which is the form BIP39
     requires and the form electrum normalizes to, so a word looked up in
     either form is found; a '#' starts a comment, which is what carries
@@ -199,10 +200,10 @@ class WordLists:
         path = None if filename is None else _filename(filename)
         with self._lock:
             known = lang in self.languages
-            # language has been loaded already
-            if known and self._language_length[lang] != 0:
+            # language has been loaded already, with no replacement asked for
+            if known and self._language_length[lang] != 0 and path is None:
                 return
-            if known:
+            if known and path is None:
                 path = self.language_files[lang]
             elif path is None:
                 raise BTClibMnemonicsValueError(f"Missing file for language '{lang}'")
@@ -215,7 +216,7 @@ class WordLists:
             # asking each language in turn whether it holds a word
             if not known:
                 self.languages.append(lang)
-                self.language_files[lang] = path
+            self.language_files[lang] = path
             # the words first and the count second: the count is what
             # marks the language loaded, so publishing it before the
             # words it counts is what let a concurrent reader see an

@@ -25,6 +25,11 @@ driver that would keep both sides' numbers.
 
 ## v2026.10 (work in progress, not released yet)
 
+### `WordLists.load_lang` honours a replacement file
+
+Passing a file for a registered language loads that file and records it,
+instead of silently keeping the bundled word-list (closes #21).
+
 ### `REPOSITORY.md` records what each read-back answers
 
 Each read-back carries what it answered on 2026-09-29, and *Read the

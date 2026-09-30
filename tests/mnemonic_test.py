@@ -167,7 +167,7 @@ def test_wordlist_1() -> None:
     assert length == 2048
 
 
-def test_wordlist_2() -> None:
+def test_wordlist_2(tmp_path: Path) -> None:
     """Refuse a missing or short word-list; add a language dynamically."""
     # a private WordLists and not the singleton: adding a language to that
     # one is process-wide, so a test that did would leave every later test
@@ -205,6 +205,13 @@ def test_wordlist_2() -> None:
     length = word_lists.language_length(lang)
     assert length == 2048
     assert word_lists.langs_of_words(["abandon", "zoo"]) == ["en", "en2"]
+
+    # an explicit file replaces a registered language rather than being ignored
+    replacement = tmp_path / "two-words.txt"
+    replacement.write_text("alpha\nbeta\n", encoding="utf-8")
+    word_lists.load_lang("en", replacement)
+    assert word_lists.language_files["en"] == str(replacement)
+    assert word_lists.wordlist("en") == ["alpha", "beta"]
 
 
 def test_every_wordlist() -> None:
