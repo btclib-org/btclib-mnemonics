@@ -79,6 +79,12 @@ release published describes now runs as btclib-org/.github's
 `<tag>.intoto.jsonl`, the name `reusable-github-release.yml` attaches it under
 (issue btclib-org/.github#1468).
 
+### `codeql.yml`'s aggregate runs `check_run_jobs.py`
+
+The aggregate's step runs `check_run_jobs.py`, which reads the run's jobs
+listing again up to a deadline while a row of `analyze` is unfinished
+(issue btclib-org/.github#1463).
+
 ## v2026.9.29
 
 ### The repository opens
