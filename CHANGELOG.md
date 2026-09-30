@@ -61,6 +61,12 @@ Each install cell retries `pip install btclib-mnemonics==<version>` until a
 deadline, while the index does not serve it, where a cell whose edge held the
 previous page failed after the wait (issue btclib-org/.github#1458).
 
+### The OpenSSF Baseline badge
+
+`README.md`'s badge row ends with the OpenSSF Baseline badge, beside the
+Best Practices badge, section 2 of the organization standard admitting it
+on the same property (issue btclib-org/.github#1460).
+
 ## v2026.9.29
 
 ### The repository opens

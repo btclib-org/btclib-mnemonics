@@ -50,6 +50,7 @@ says how the choice is enforced.
 
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/btclib-org/btclib-mnemonics/badge)](https://scorecard.dev/viewer/?uri=github.com/btclib-org/btclib-mnemonics)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/15087/badge)](https://www.bestpractices.dev/projects/15087)
+[![OpenSSF Baseline](https://www.bestpractices.dev/projects/15087/baseline)](https://www.bestpractices.dev/projects/15087)
 
 It is fully annotated and ships `py.typed`, and it imports nothing
 but the standard library.
