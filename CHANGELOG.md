@@ -73,6 +73,12 @@ The retry the entry `pypi-install.yml` retries the install of the version the
 release published describes now runs as btclib-org/.github's
 `install_published_release.py` (issue btclib-org/.github#1458).
 
+### The release's attestation bundle is attached as `*.intoto.jsonl`
+
+`RELEASING.md`'s verification and recovery commands name the bundle
+`<tag>.intoto.jsonl`, the name `reusable-github-release.yml` attaches it under
+(issue btclib-org/.github#1468).
+
 ## v2026.9.29
 
 ### The repository opens

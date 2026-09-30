@@ -268,7 +268,11 @@ skip = "*/_data/*.json,*/_data/*.txt,.secrets.baseline,uv.lock,fuzz/corpus/*"
 # not a misspelling: "te" is what electrum's own NFD spelling of
 # "término" tokenizes into at the combining accent, a passphrase
 # tests/electrum_test.py needs in exactly that spelling
-ignore-words-list = "te"
+# Also `intoto`, in-toto's own spelling in the bundle's name
+# `<tag>.intoto.jsonl`. RELEASING.md writes it in fenced commands, outside
+# the backticks `ignore-regex` below hides, and the dictionary offers
+# "into" for it, which --write-changes applies
+ignore-words-list = "te,intoto"
 # a misspelling written on purpose goes in backticks, which hides it from
 # this hook: what is inside backticks is an identifier, typos' half of the
 # work and not this hook's
@@ -298,6 +302,11 @@ extend-exclude = [
 # to stay checked. An unbroken run of 26 characters or more is a literal,
 # not a word
 extend-ignore-re = ['[0-9A-Za-z+/]{26,}={0,2}']
+
+[tool.typos.default.extend-words]
+# `intoto` in the bundle's name `<tag>.intoto.jsonl`, as for codespell above:
+# typos' dictionary offers "into" for it too
+intoto = "intoto"
 
 [tool.typos.type.verbatim]
 # the files that quote a word rather than use it: a changelog entry quotes
