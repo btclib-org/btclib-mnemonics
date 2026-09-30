@@ -55,6 +55,12 @@ The install names `btclib-mnemonics==<version>` from the tag `release.yml` passe
 where a bare name let a lagging index serve the release before it
 (issue btclib-org/.github#1456).
 
+### `pypi-install.yml` retries the install of the version the release published
+
+Each install cell retries `pip install btclib-mnemonics==<version>` until a
+deadline, while the index does not serve it, where a cell whose edge held the
+previous page failed after the wait (issue btclib-org/.github#1458).
+
 ## v2026.9.29
 
 ### The repository opens

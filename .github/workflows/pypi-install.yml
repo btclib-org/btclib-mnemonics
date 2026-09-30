@@ -105,14 +105,57 @@ jobs:
           # of the index calls newest; empty on the schedule and a
           # dispatch, where the newest is the one wanted
           TAG: ${{ inputs.version }}
+          # seconds a pinned version has to show up in this runner's view of
+          # the index, to be read against this job's timeout-minutes. The
+          # wait above asks from one runner and each cell reads through a
+          # CDN edge of its own, so a cell whose edge still holds the
+          # previous page fails with "No matching distribution" after the
+          # wait has passed (btclib-org/.github#1458). A deadline and not a
+          # count of attempts, for the reason the docstring of
+          # btclib-org/.github's wait_for_pypi_release.py gives, and chosen
+          # rather than measured: the stale edge that prompted this lasted
+          # more than four minutes
+          DEADLINE: 600
+        # a pinned install is retried only where the index says it does not
+        # serve that version, which is `No matching distribution found` from
+        # pip and `no version of` from uv; any other failure, an sdist that
+        # does not build above all, ends the step at once. The installer's
+        # cache is off on every attempt: the index answers with
+        # `cache-control: max-age=600`, and neither pip nor uv asks again
+        # for a page it holds for that long, so a retry with the cache on
+        # reads back the stale page it failed on
         run: |
           python -m pip install -U pip
-          requirement=btclib-mnemonics
-          if [ -n "$TAG" ]; then requirement="btclib-mnemonics==${TAG#v}"; fi
-          if [ "$NO_BINARY" = "true" ]; then
-            python -m pip install --verbose --no-binary btclib-mnemonics "$requirement"
+          package=btclib-mnemonics
+          requirement=$package
+          if [ -n "$TAG" ]; then requirement="$package==${TAG#v}"; fi
+          install_published() {
+            if [ "$NO_BINARY" = "true" ]; then
+              python -m pip install --no-cache-dir --verbose \
+                --no-binary "$package" "$requirement"
+            else
+              python -m pip install --no-cache-dir --verbose \
+                --only-binary "$package" "$requirement"
+            fi
+          }
+          if [ -z "$TAG" ]; then
+            install_published
           else
-            python -m pip install --verbose --only-binary btclib-mnemonics "$requirement"
+            log=$(mktemp)
+            unserved="(No matching distribution found for|no version of)"
+            deadline=$((SECONDS + DEADLINE))
+            until install_published >"$log" 2>&1; do
+              cat "$log"
+              if ! grep -Eq "$unserved $package(\[[^]]*\])?==${TAG#v}" "$log"; then
+                exit 1
+              fi
+              if [ "$SECONDS" -ge "$deadline" ]; then
+                echo "::error::$requirement was not served to this runner within ${DEADLINE}s"
+                exit 1
+              fi
+              sleep 15
+            done
+            cat "$log"
           fi
       # a seed rather than an import: an import runs `__init__.py` alone,
       # and the word-list a mnemonic is read against is a data file the
