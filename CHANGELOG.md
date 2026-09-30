@@ -96,6 +96,11 @@ vulnerabilities its release is not affected by, into the document's
 `SECURITY.md` says a report is acknowledged within 7 days, and a fix or a
 published advisory within 90 (issue btclib-org/.github#1460).
 
+### `WordLists.load_lang` honours a replacement file
+
+Given a file for a registered language, `load_lang` loads that file and
+records it, where it silently kept the registered word-list (closes #21).
+
 ## v2026.9.29
 
 ### The repository opens

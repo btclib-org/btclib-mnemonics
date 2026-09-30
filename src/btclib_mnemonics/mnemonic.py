@@ -135,7 +135,8 @@ class WordLists:
     typed with it: the set is open, so a Literal would reject the
     language a caller has just loaded (issue btclib-org/btclib#216).
 
-    Word-lists are loaded only if needed and read only once from disk.
+    Word-lists are loaded only if needed and read only once from disk,
+    unless load_lang is given a file that replaces the registered one.
     Each word is NFKD-normalized as it is read, which is the form BIP39
     requires and the form electrum normalizes to, so a word looked up in
     either form is found; a '#' starts a comment, which is what carries
@@ -186,10 +187,11 @@ class WordLists:
     def load_lang(
         self, lang: str, filename: str | os.PathLike[str] | None = None
     ) -> None:
-        """Load/add a language word-list if not loaded/added yet.
+        """Load a language word-list, or add or replace one from filename.
 
-        The language file has to be provided for adding new languages
-        beyond those already provided.
+        A registered language given no filename is read once, from its
+        registered file; given filename, it is read from that file, which
+        becomes the language's file. A new language needs filename.
 
         Every function taking a `lang` reaches it here, so this is where a
         `lang` of another type is refused: unchecked, it would be a
@@ -199,10 +201,10 @@ class WordLists:
         path = None if filename is None else _filename(filename)
         with self._lock:
             known = lang in self.languages
-            # language has been loaded already
-            if known and self._language_length[lang] != 0:
+            # language has been loaded already, with no replacement asked for
+            if known and self._language_length[lang] != 0 and path is None:
                 return
-            if known:
+            if known and path is None:
                 path = self.language_files[lang]
             elif path is None:
                 raise BTClibMnemonicsValueError(f"Missing file for language '{lang}'")
@@ -215,7 +217,7 @@ class WordLists:
             # asking each language in turn whether it holds a word
             if not known:
                 self.languages.append(lang)
-                self.language_files[lang] = path
+            self.language_files[lang] = path
             # the words first and the count second: the count is what
             # marks the language loaded, so publishing it before the
             # words it counts is what let a concurrent reader see an
@@ -264,9 +266,10 @@ class WordLists:
         assert_type(word, str, "word")
         self.load_lang(lang)
         normalized = unicodedata.normalize("NFKD", word)
-        if normalized not in self._index[lang]:
+        found = self._index[lang].get(normalized)
+        if found is None:
             raise BTClibMnemonicsValueError(f"unknown '{lang}' word")
-        return self._index[lang][normalized]
+        return found
 
     def langs_of_words(self, words: Sequence[str]) -> list[str]:
         """Return the languages whose word-list holds every word.
