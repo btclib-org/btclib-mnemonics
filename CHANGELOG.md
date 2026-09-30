@@ -101,6 +101,12 @@ published advisory within 90 (issue btclib-org/.github#1460).
 Given a file for a registered language, `load_lang` loads that file and
 records it, where it silently kept the registered word-list (closes #21).
 
+### `release.yml` audits the lock before it publishes
+
+The `audit` job calls btclib-org/.github's `reusable-audit.yml`, which runs
+`uv audit` over what the wheel declares, and both publish jobs wait for its
+success (issue btclib-org/.github#1466).
+
 ## v2026.9.29
 
 ### The repository opens
