@@ -187,10 +187,11 @@ class WordLists:
     def load_lang(
         self, lang: str, filename: str | os.PathLike[str] | None = None
     ) -> None:
-        """Load/add a language word-list if not loaded/added yet.
+        """Load a language word-list, or add or replace one from filename.
 
-        The language file has to be provided for adding new languages
-        beyond those already provided.
+        A registered language given no filename is read once, from its
+        registered file; given filename, it is read from that file, which
+        becomes the language's file. A new language needs filename.
 
         Every function taking a `lang` reaches it here, so this is where a
         `lang` of another type is refused: unchecked, it would be a
@@ -265,9 +266,10 @@ class WordLists:
         assert_type(word, str, "word")
         self.load_lang(lang)
         normalized = unicodedata.normalize("NFKD", word)
-        if normalized not in self._index[lang]:
+        found = self._index[lang].get(normalized)
+        if found is None:
             raise BTClibMnemonicsValueError(f"unknown '{lang}' word")
-        return self._index[lang][normalized]
+        return found
 
     def langs_of_words(self, words: Sequence[str]) -> list[str]:
         """Return the languages whose word-list holds every word.

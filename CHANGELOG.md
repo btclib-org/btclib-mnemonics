@@ -25,11 +25,6 @@ driver that would keep both sides' numbers.
 
 ## v2026.10 (work in progress, not released yet)
 
-### `WordLists.load_lang` honours a replacement file
-
-Passing a file for a registered language loads that file and records it,
-instead of silently keeping the bundled word-list (closes #21).
-
 ### `REPOSITORY.md` records what each read-back answers
 
 Each read-back carries what it answered on 2026-09-29, and *Read the
@@ -100,6 +95,11 @@ vulnerabilities its release is not affected by, into the document's
 
 `SECURITY.md` says a report is acknowledged within 7 days, and a fix or a
 published advisory within 90 (issue btclib-org/.github#1460).
+
+### `WordLists.load_lang` honours a replacement file
+
+Given a file for a registered language, `load_lang` loads that file and
+records it, where it silently kept the registered word-list (closes #21).
 
 ## v2026.9.29
 

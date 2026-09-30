@@ -168,7 +168,7 @@ def test_wordlist_1() -> None:
 
 
 def test_wordlist_2(tmp_path: Path) -> None:
-    """Refuse a missing or short word-list; add a language dynamically."""
+    """Refuse a missing or short word-list; add a language, and replace one."""
     # a private WordLists and not the singleton: adding a language to that
     # one is process-wide, so a test that did would leave every later test
     # of language detection with a language it did not expect
