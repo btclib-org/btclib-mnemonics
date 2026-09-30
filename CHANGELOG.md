@@ -113,6 +113,12 @@ The `dist` job writes the bill of materials with btclib-org/.github's
 `generate_sbom.py`, served from `main`, and the tree keeps no copy of it
 (issue btclib-org/.github#1478).
 
+### `CLAUDE.md` carries the shared primary-checkout section
+
+The shared section *The primary checkout is the maintainer's* replaces this
+tree's, *Model* names only the model, and the draft-pull-request bullet names
+`codeql: every job passed` too (issue btclib-org/.github#1494).
+
 ## v2026.9.29
 
 ### The repository opens
