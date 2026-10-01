@@ -163,6 +163,12 @@ unknown `lang` or `mnemonic_type` (closes #17, closes #18, closes #22).
 `fuzz/fuzz_mnemonics.py` calls each decoder in `DECODERS`, a test holds the
 two together, and recombination is driven with valid shares (closes #23).
 
+### A `Signed-off-by:` trailer on every commit of a pull request
+
+*Pull requests* says every commit of a pull request carries a
+`Signed-off-by:` trailer, and how to add it (issue
+btclib-org/.github#1467).
+
 ## v2026.9.29
 
 ### The repository opens
