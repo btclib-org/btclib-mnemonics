@@ -12,11 +12,11 @@ code -- it parses the source with `ast` and resolves what a harness
 *names* against the installed package instead.
 
 `ENTRY_POINTS`, a module-level tuple of `"module:name"` string literals,
-is what each harness names, and what `fuzz_target`'s own body calls is
-asked to be exactly that. Every seed is then tried against every entry
-point, and passes if at least one reads it without raising
-`BTClibMnemonicsException`; a seed the SLIP-0039 decoder reads has to
-encode back to its own bytes.
+is what each harness names, and `fuzz_target`'s own body has to call
+each of them and each decoder `tests/fuzz_test.py` lists. Every seed is
+then tried against every entry point, and passes if at least one reads it
+without raising `BTClibMnemonicsException`; a seed the SLIP-0039 decoder
+reads has to encode back to its own bytes.
 
 What this gate is for is keeping the fuzzer's own starting point honest
 as the decoders move under it. A crash the fuzzer finds is a test of the
@@ -35,6 +35,7 @@ import pytest
 
 from btclib_mnemonics import slip39
 from btclib_mnemonics.exceptions import BTClibMnemonicsException
+from tests.fuzz_test import DECODERS
 
 _FUZZ = Path(__file__).parent.parent / "fuzz"
 _CORPUS = _FUZZ / "corpus"
@@ -147,3 +148,14 @@ def test_every_seed_is_read(path: Path, seed: Path) -> None:
         if isinstance(result, slip39.Share):
             assert slip39.mnemonic_from_share(result) == text
     assert read, f"no entry point of {path.name} reads {seed.name}"
+
+
+def test_every_decoder_the_hypothesis_tests_drive_is_fuzzed() -> None:
+    """Each decoder of fuzz_test.DECODERS is called by a harness's target."""
+    called = set().union(*(_called(_tree(path)) for path in _HARNESSES))
+    missing = {
+        name
+        for name in DECODERS
+        if "btclib_mnemonics." + name.replace(".", ":") not in called
+    }
+    assert not missing, sorted(missing)

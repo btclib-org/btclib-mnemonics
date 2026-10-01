@@ -82,8 +82,8 @@ read back by a user, and every decoder that takes one —
 `slip39.share_from_mnemonic` and the rest `tests/fuzz_test.py` lists —
 is driven by Hypothesis there and by `fuzz/fuzz_mnemonics.py` under
 ClusterFuzzLite (`.github/workflows/fuzz.yml`);
-`tests/fuzz_corpus_test.py` checks that every seed of its corpus is
-still read.
+`tests/fuzz_corpus_test.py` checks that the harness calls each of them
+and that every seed of its corpus is still read.
 
 **Files.** `mnemonic.WordLists` takes a caller's path for a language, in
 its `language_files` constructor argument and its `load_lang` method.

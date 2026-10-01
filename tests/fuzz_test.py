@@ -24,8 +24,9 @@ lookup.
 from __future__ import annotations
 
 import contextlib
+import random
 from collections.abc import Callable
-from typing import Any
+from typing import Any, NamedTuple
 
 import pytest
 from hypothesis import given
@@ -36,7 +37,7 @@ from btclib_mnemonics.exceptions import (
     BTClibMnemonicsTypeError,
     BTClibMnemonicsValueError,
 )
-from btclib_mnemonics.mnemonic import WORDLISTS
+from btclib_mnemonics.mnemonic import WORDLISTS, indexes_from_mnemonic
 
 # what a decoder of this package is allowed to raise. Anything else
 # leaves the contract src/btclib_mnemonics/exceptions.py documents
@@ -50,6 +51,16 @@ DECODERS: dict[str, Callable[[str], Any]] = {
     "electrum.lang_from_mnemonic": electrum.lang_from_mnemonic,
     "electrum.hex_seed_from_old_mnemonic": electrum.hex_seed_from_old_mnemonic,
     "slip39.share_from_mnemonic": slip39.share_from_mnemonic,
+    "bip39.seed_from_mnemonic": lambda s: bip39.seed_from_mnemonic(s, ""),
+    "electrum.seed_from_mnemonic": lambda s: electrum.seed_from_mnemonic(s, ""),
+    "electrum.old_master_prv_key_from_mnemonic": (
+        electrum.old_master_prv_key_from_mnemonic
+    ),
+    "mnemonic.indexes_from_mnemonic": lambda s: indexes_from_mnemonic(s, "en"),
+    # one share per line
+    "slip39.master_secret_from_mnemonics": (
+        lambda s: slip39.master_secret_from_mnemonics(s.split("\n"))
+    ),
 }
 
 
@@ -88,6 +99,7 @@ def test_a_share_is_read_within_the_contract(sentence: str) -> None:
 
 _FIELD = st.integers(min_value=0, max_value=15)
 _COUNT = st.integers(min_value=1, max_value=16)
+_GROUPS = st.integers(min_value=1, max_value=3)
 
 
 @st.composite
@@ -153,3 +165,74 @@ def test_a_lone_surrogate_is_refused_within_the_contract(
     with contextlib.suppress(*CONTRACT):
         electrum.seed_from_mnemonic(sentence + " " + text, text)
     assert isinstance(dispatch.all_seed_types_from_mnemonic(sentence + text), list)
+
+
+class _Split(NamedTuple):
+    """A master secret and the checksum-valid shares it is split into."""
+
+    secret: bytes
+    groups: list[tuple[int, int]]
+    group_threshold: int
+    mnemonics: list[list[str]]
+
+
+@st.composite
+def _splits(draw: st.DrawFn) -> _Split:
+    """Return a master secret split into groups of valid SLIP-0039 shares."""
+    n_bytes = 2 * draw(st.integers(min_value=8, max_value=16))
+    secret = draw(st.binary(min_size=n_bytes, max_size=n_bytes))
+    groups = []
+    for _ in range(draw(_GROUPS)):
+        member_count = draw(st.integers(min_value=1, max_value=4))
+        # a threshold of 1 is only for a group of one
+        threshold = draw(
+            st.integers(min_value=min(2, member_count), max_value=member_count)
+        )
+        groups.append((threshold, member_count))
+    group_threshold = draw(st.integers(min_value=1, max_value=len(groups)))
+    rng = random.Random(draw(st.integers()))
+    mnemonics = slip39.mnemonics_from_master_secret(
+        secret,
+        groups,
+        group_threshold,
+        iteration_exponent=0,
+        entropy_source=rng.randbytes,
+    )
+    return _Split(secret, groups, group_threshold, mnemonics)
+
+
+@given(split=_splits(), data=st.data())
+def test_recombination_recovers_the_secret(split: _Split, data: st.DataObject) -> None:
+    """A threshold of groups, each a threshold of its shares, is the secret.
+
+    Random words almost never carry a valid checksum, so recombination
+    is driven from shares a split made.
+    """
+    chosen = data.draw(
+        st.lists(
+            st.sampled_from(range(len(split.groups))),
+            min_size=split.group_threshold,
+            max_size=split.group_threshold,
+            unique=True,
+        )
+    )
+    picked = []
+    for index in chosen:
+        shares = data.draw(st.permutations(split.mnemonics[index]))
+        picked += shares[: split.groups[index][0]]
+    assert slip39.master_secret_from_mnemonics(picked) == split.secret
+
+
+@given(
+    first=_splits(),
+    second=_splits(),
+    data=st.data(),
+)
+def test_recombination_of_valid_shares_stays_within_the_contract(
+    first: _Split, second: _Split, data: st.DataObject
+) -> None:
+    """Valid shares of two splits, in any number and order, stay in contract."""
+    pool = [m for split in (first, second) for group in split.mnemonics for m in group]
+    chosen = data.draw(st.lists(st.sampled_from(pool), max_size=12))
+    with contextlib.suppress(*CONTRACT):
+        slip39.master_secret_from_mnemonics(chosen)
