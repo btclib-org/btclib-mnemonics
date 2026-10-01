@@ -181,6 +181,11 @@ btclib-org/.github#1467).
 so an outage of that site no longer fails the `-n -W` docs build (issue
 btclib-org/.github#1508).
 
+### The release's attestation is signed by `reusable-build.yml`, at SLSA Build L3
+
+`release.yml` calls `reusable-build.yml`, which signs the files before the
+publish jobs wait for approval (issue btclib-org/.github#1506).
+
 ## v2026.9.29
 
 ### The repository opens
