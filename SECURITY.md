@@ -87,8 +87,10 @@ package is used to teach and to prototype as much as to build:
     the interpreter meanwhile.
 - **Nothing here is constant-time.** The package is pure Python, and a
     word list is indexed by the secret's own digits.
-- **Randomness comes from the operating system** through the `secrets`
-    module, and nothing here seeds a generator of its own.
+- **Randomness comes from the operating system** through `secrets` and
+    `os.urandom`, and nothing here seeds a generator of its own.
+    `slip39.mnemonics_from_master_secret` takes an `entropy_source`, and
+    a weak one a caller passes in is the caller's.
 - **`entropy.collect_rolls` is interactive**, reading dice rolls with
     `input()` and reporting with `print()`: whatever the terminal keeps,
     it keeps.

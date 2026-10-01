@@ -31,6 +31,12 @@ driver that would keep both sides' numbers.
 and that a local review of a named sha, by a reviewer other than the author,
 stands in (issue btclib-org/.github#1527).
 
+### `SECURITY.md` says where randomness comes from
+
+`SECURITY.md` names `os.urandom` beside `secrets`, and says a weak
+`entropy_source` a caller passes to `slip39.mnemonics_from_master_secret`
+is the caller's (issue #24).
+
 ## v2026.10.2
 
 ### `REPOSITORY.md` records what each read-back answers
