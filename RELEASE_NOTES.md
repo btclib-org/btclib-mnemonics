@@ -9,7 +9,9 @@ number says when a release was cut, and promises nothing about
 compatibility, so a breaking change is announced in this file — read it
 before upgrading, rather than a digit.
 
-## v2026.10 (work in progress, not released yet)
+## v2026.11 (work in progress, not released yet)
+
+## v2026.10.2
 
 - **BIP39 refuses 512-bit entropy and 48-word mnemonics.** Pass at most
   256 bits. Entropy over the largest size is refused rather than
@@ -22,6 +24,9 @@ before upgrading, rather than a digit.
   `--signer-workflow btclib-org/.github/.github/workflows/reusable-build.yml@refs/heads/main`
   and `--source-ref refs/tags/v<version>`; SECURITY.md has the command.
   Earlier releases keep `reusable-attest.yml`.
+- **`WordLists.language_files` holds each file name as a `str`.** A
+  `pathlib.Path` given to the constructor is stored as its `str`, where it
+  was kept as given.
 
 ## v2026.9.29
 
