@@ -56,7 +56,7 @@ import secrets
 import unicodedata
 from hashlib import pbkdf2_hmac, sha256
 
-from btclib_mnemonics._utils import assert_type
+from btclib_mnemonics._utils import assert_type, utf8_bytes
 from btclib_mnemonics.entropy import (
     BinStr,
     Entropy,
@@ -312,8 +312,8 @@ def seed_from_mnemonic(
     passphrase = unicodedata.normalize("NFKD", passphrase)
 
     hf_name = "sha512"
-    password = mnemonic.encode()
-    salt = f"mnemonic{passphrase}".encode()
+    password = utf8_bytes(mnemonic, "mnemonic")
+    salt = utf8_bytes(f"mnemonic{passphrase}", "passphrase")
     iterations = 2048
     dksize = 64
     return pbkdf2_hmac(hf_name, password, salt, iterations, dksize)

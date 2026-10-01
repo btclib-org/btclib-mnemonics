@@ -152,6 +152,12 @@ at their own width, leading zeros included, so their first bit is unbiased.
 Longer ones are refused, before any word is decoded for a mnemonic, which
 breaks callers that pass them (closes #19).
 
+### Every refusal is one of the two exceptions, and none quotes an unknown name
+
+A lone surrogate, an unreadable word-list file and a bad `WordLists` or
+`wordlists` argument are refused as the two exceptions. No refusal quotes an
+unknown `lang` or `mnemonic_type` (closes #17, closes #18, closes #22).
+
 ## v2026.9.29
 
 ### The repository opens

@@ -449,7 +449,7 @@ def test_mnemonic() -> None:
 
     mnemonic_type = "std"
     with pytest.raises(
-        BTClibMnemonicsValueError, match="unknown electrum mnemonic version: 'std'; "
+        BTClibMnemonicsValueError, match="^unknown electrum mnemonic version; "
     ):
         electrum.mnemonic_from_entropy(mnemonic_type, entropy, lang)
 
