@@ -17,6 +17,11 @@ before upgrading, rather than a digit.
 - **SLIP-0039 refuses master secrets over 64 bytes and shares over 59
   words.** The specification sets no maximum, and 64 bytes is the largest
   BIP32 seed.
+- **Verifying a release's attestation names a new signer and the tag.**
+  `gh attestation verify` takes
+  `--signer-workflow btclib-org/.github/.github/workflows/reusable-build.yml@refs/heads/main`
+  and `--source-ref refs/tags/v<version>`; SECURITY.md has the command.
+  Earlier releases keep `reusable-attest.yml`.
 
 ## v2026.9.29
 
