@@ -175,8 +175,7 @@ def test_wordlist_2(tmp_path: Path) -> None:
     word_lists = WordLists()
 
     lang = "fakeen"
-    # missing file for language 'fakeen''
-    err_msg = "Missing file for language 'fakeen'"
+    err_msg = "^Missing file for an unknown language$"
     with pytest.raises(BTClibMnemonicsValueError, match=err_msg):
         word_lists.load_lang(lang)
 

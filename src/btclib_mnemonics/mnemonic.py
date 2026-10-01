@@ -9,7 +9,7 @@ from __future__ import annotations
 import os
 import threading
 import unicodedata
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Literal
 
@@ -164,12 +164,16 @@ class WordLists:
 
     def __init__(
         self,
-        language_files: dict[str, str] | None = None,
+        language_files: Mapping[str, str | os.PathLike[str]] | None = None,
         power_of_two: bool = True,
     ) -> None:
         self._lock = threading.Lock()
         self.power_of_two = power_of_two
-        self.language_files = dict(language_files or DEFAULT_LANGUAGE_FILES)
+        assert_type(language_files, (Mapping, type(None)), "language_files")
+        files = language_files or DEFAULT_LANGUAGE_FILES
+        for lang in files:
+            assert_type(lang, str, "language")
+        self.language_files = {lang: _filename(name) for lang, name in files.items()}
         self.languages = list(self.language_files)
 
         # create dictionaries where each language has empty word-list
@@ -207,7 +211,9 @@ class WordLists:
             if known and path is None:
                 path = self.language_files[lang]
             elif path is None:
-                raise BTClibMnemonicsValueError(f"Missing file for language '{lang}'")
+                # the language is not quoted: a caller who passed a secret
+                # in the wrong position would have it repeated
+                raise BTClibMnemonicsValueError("Missing file for an unknown language")
 
             words = self._read_wordlist(path)
 
@@ -233,8 +239,16 @@ class WordLists:
         # korean not even close, and the BIP publishes them NFKD-encoded.
         # A '#' starts a comment, which is what carries the licence
         # header of electrum's Portuguese list
-        with Path(filename).open(encoding="utf-8") as file_:
-            lines = file_.readlines()
+        try:
+            with Path(filename).open(encoding="utf-8") as file_:
+                lines = file_.readlines()
+        except UnicodeDecodeError:
+            # from None: the exception carries the bytes it could not read
+            err_msg = "invalid wordlist file: not UTF-8"
+            raise BTClibMnemonicsValueError(err_msg) from None
+        except (OSError, ValueError) as error:
+            err_msg = f"cannot read wordlist file: {type(error).__name__}"
+            raise BTClibMnemonicsValueError(err_msg) from None
         stripped = (line.split("#")[0].strip() for line in lines)
         words = [unicodedata.normalize("NFKD", word) for word in stripped if word]
 
@@ -265,6 +279,8 @@ class WordLists:
         """
         assert_type(word, str, "word")
         self.load_lang(lang)
+        # lang is quoted below: load_lang has matched it against the
+        # registered languages
         normalized = unicodedata.normalize("NFKD", word)
         found = self._index[lang].get(normalized)
         if found is None:
@@ -386,6 +402,7 @@ def mnemonic_from_indexes(
     not by its value, which is a digit of the secret the sentence spells.
     """
     _assert_indexes(indexes)
+    assert_type(wordlists, WordLists, "wordlists")
     wordlist = wordlists.wordlist(lang)
     for position, index in enumerate(indexes, 1):
         if not 0 <= index < len(wordlist):
@@ -405,6 +422,7 @@ def indexes_from_mnemonic(
     ideographic space of a japanese mnemonic included.
     """
     assert_type(mnemonic, str, "mnemonic")
+    assert_type(wordlists, WordLists, "wordlists")
     # loaded first, so that an unknown language is refused as itself and
     # not as the unknown word the loop below would call it
     wordlists.load_lang(lang)

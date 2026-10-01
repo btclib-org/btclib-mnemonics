@@ -20,6 +20,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any
 
 import pytest
@@ -208,7 +209,7 @@ def test_an_unknown_word_is_refused_by_its_position() -> None:
 def test_an_unknown_language_is_refused_as_itself() -> None:
     """Not as an unknown word, which the per-word loop would call it."""
     with pytest.raises(
-        BTClibMnemonicsValueError, match="^Missing file for language 'xx'$"
+        BTClibMnemonicsValueError, match="^Missing file for an unknown language$"
     ):
         mnemonic.indexes_from_mnemonic(_ABOUT, "xx")
 
@@ -239,3 +240,119 @@ def test_an_unknown_electrum_version_quotes_no_hash_prefix() -> None:
     ) as excinfo:
         electrum.version_from_mnemonic(_ABOUT)
     assert prefix not in str(excinfo.value)
+
+
+# a secret in the position of a language or of a version: the entropy
+# of electrum.mnemonic_from_entropy's first parameter, the sentence of
+# bip39.entropy_from_mnemonic's second
+_SECRET_IN_THE_WRONG_PLACE: list[tuple[str, Callable[[str], Any]]] = [
+    ("electrum.mnemonic_from_entropy", electrum.mnemonic_from_entropy),
+    ("bip39.entropy_from_mnemonic", lambda s: bip39.entropy_from_mnemonic("en", s)),
+    (
+        "bip39.mnemonic_from_entropy",
+        lambda s: bip39.mnemonic_from_entropy("0" * 128, s),
+    ),
+    (
+        "mnemonic.indexes_from_mnemonic",
+        lambda s: mnemonic.indexes_from_mnemonic("en", s),
+    ),
+    (
+        "mnemonic.mnemonic_from_indexes",
+        lambda s: mnemonic.mnemonic_from_indexes([0], s),
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "name, call",
+    _SECRET_IN_THE_WRONG_PLACE,
+    ids=[n for n, _ in _SECRET_IN_THE_WRONG_PLACE],
+)
+def test_a_secret_in_the_place_of_a_name_is_not_repeated(
+    name: str, call: Callable[[str], Any]
+) -> None:
+    """The refusal of an unknown language or version quotes neither."""
+    leaked = "zebra7f7f7f7f7f7f"
+    with pytest.raises(BTClibMnemonicsValueError) as excinfo:
+        call(leaked)
+    assert leaked not in str(excinfo.value), name
+
+
+def test_a_word_list_file_that_cannot_be_read_is_a_value_error(
+    tmp_path: Path,
+) -> None:
+    """A file that is missing, a directory, a NUL in a name, or no UTF-8."""
+    not_utf8 = tmp_path / "not_utf8.txt"
+    not_utf8.write_bytes(b"\xff\xfe")
+    cases = {
+        str(tmp_path / "missing.txt"): "^cannot read wordlist file: FileNotFoundError$",
+        str(tmp_path): "^cannot read wordlist file: [A-Za-z]*Error$",
+        "a\0b": "^cannot read wordlist file: ValueError$",
+        str(not_utf8): "^invalid wordlist file: not UTF-8$",
+    }
+    for filename, err_msg in cases.items():
+        with pytest.raises(BTClibMnemonicsValueError, match=err_msg) as excinfo:
+            mnemonic.WordLists().load_lang("xx", filename)
+        assert filename not in str(excinfo.value)
+        assert excinfo.value.__suppress_context__
+        assert "xx" not in mnemonic.WordLists().languages
+
+
+def test_the_word_lists_constructor_validates_its_arguments() -> None:
+    """The language files are a dict of file names, named by str."""
+    for bad in ("abc", 5, [("xx", "x.txt")]):
+        with pytest.raises(BTClibMnemonicsTypeError, match="^invalid language_files"):
+            mnemonic.WordLists(bad)  # type: ignore[arg-type]
+    with pytest.raises(BTClibMnemonicsTypeError, match="^invalid language type: int$"):
+        mnemonic.WordLists({1: "x.txt"})  # type: ignore[dict-item]
+    with pytest.raises(BTClibMnemonicsTypeError, match="^invalid filename type: int$"):
+        mnemonic.WordLists({"xx": 5})  # type: ignore[dict-item]
+    # a path object names a file as well as its str does
+    word_lists = mnemonic.WordLists({"en": Path(mnemonic.data_file("english.txt"))})
+    assert word_lists.language_length("en") == 2048
+    # and so does any mapping
+    files = MappingProxyType({"en": mnemonic.data_file("english.txt")})
+    assert mnemonic.WordLists(files).language_length("en") == 2048
+
+
+def test_the_wordlists_argument_is_validated() -> None:
+    """Both functions taking one refuse what is no `WordLists`."""
+    with pytest.raises(BTClibMnemonicsTypeError, match="^invalid wordlists type: int$"):
+        mnemonic.indexes_from_mnemonic("abandon", "en", 5)  # type: ignore[arg-type]
+    with pytest.raises(
+        BTClibMnemonicsTypeError, match="^invalid wordlists type: dict$"
+    ):
+        mnemonic.mnemonic_from_indexes([0], "en", {})  # type: ignore[arg-type]
+
+
+_LONE = "\udcff"
+_ELECTRUM = electrum.mnemonic_from_entropy("standard", "0" * 128)
+
+_LONE_SURROGATES: list[tuple[str, Callable[[], Any]]] = [
+    ("mnemonic", lambda: electrum.version_from_mnemonic(_ABOUT + _LONE)),
+    ("mnemonic", lambda: electrum.entropy_from_mnemonic(_ABOUT + _LONE)),
+    ("mnemonic", lambda: electrum.seed_from_mnemonic(_ELECTRUM + _LONE, "")),
+    (
+        "mnemonic",
+        lambda: bip39.seed_from_mnemonic(_ABOUT + _LONE, "", verify_checksum=False),
+    ),
+    ("passphrase", lambda: bip39.seed_from_mnemonic(_ABOUT, "pw" + _LONE)),
+    ("passphrase", lambda: electrum.seed_from_mnemonic(_ELECTRUM, "pw" + _LONE)),
+]
+
+
+@pytest.mark.parametrize("what, call", _LONE_SURROGATES)
+def test_a_lone_surrogate_is_refused_as_a_value_error(
+    what: str, call: Callable[[], Any]
+) -> None:
+    """In a mnemonic or a passphrase, with no UnicodeEncodeError behind it."""
+    with pytest.raises(
+        BTClibMnemonicsValueError, match=f"^invalid {what}: contains a lone surrogate$"
+    ) as excinfo:
+        call()
+    assert excinfo.value.__suppress_context__
+
+
+def test_dispatch_answers_a_lone_surrogate() -> None:
+    """A sentence no scheme reads is answered with "", not refused."""
+    assert dispatch.seed_type_from_mnemonic(_ABOUT + _LONE) == ""

@@ -126,3 +126,30 @@ def test_dispatch_answers_every_text(text: str) -> None:
     assert dispatch.seed_type_from_mnemonic(text) == (
         seed_types[0] if seed_types else ""
     )
+
+
+# text with exactly one lone surrogate in it, which is what
+# `surrogateescape` decoding of bytes that are no UTF-8 produces and
+# `st.text()` never draws. Drawn from a union alphabet the surrogate
+# would almost never appear
+_SURROGATES = st.tuples(
+    st.text(max_size=32),
+    st.characters(min_codepoint=0xD800, max_codepoint=0xDFFF),
+    st.text(max_size=32),
+).map("".join)
+
+
+@given(text=_SURROGATES, sentence=_sentences("en", 12, 12))
+def test_a_lone_surrogate_is_refused_within_the_contract(
+    text: str, sentence: str
+) -> None:
+    """A lone surrogate is a `BTClibMnemonicsValueError`, not a codec error."""
+    for decoder in DECODERS.values():
+        _read(decoder, sentence + " " + text)
+    with contextlib.suppress(*CONTRACT):
+        bip39.seed_from_mnemonic(sentence + " " + text, "", verify_checksum=False)
+    with contextlib.suppress(*CONTRACT):
+        bip39.seed_from_mnemonic(sentence, text, verify_checksum=False)
+    with contextlib.suppress(*CONTRACT):
+        electrum.seed_from_mnemonic(sentence + " " + text, text)
+    assert isinstance(dispatch.all_seed_types_from_mnemonic(sentence + text), list)

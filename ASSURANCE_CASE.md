@@ -23,8 +23,9 @@ page points at it instead of repeating it.
   public function handed an argument it cannot use raises
   `BTClibMnemonicsTypeError` or `BTClibMnemonicsValueError`
   (`tests/input_validation_test.py`, `tests/integer_policy_test.py`,
-  `tests/bool_parameter_test.py`), and a decoder handed a hostile
-  sentence raises one of the two and nothing else (`tests/fuzz_test.py`).
+  `tests/bool_parameter_test.py`, `tests/refusals_test.py`), and a decoder
+  handed a hostile sentence, lone surrogates included, raises one of the
+  two and nothing else (`tests/fuzz_test.py`).
 - **Randomness is the operating system's.** SECURITY.md states it, and
   *Common implementation weaknesses* below says what keeps it so.
 - **A published distribution is what this tree built.** SECURITY.md's
@@ -135,7 +136,9 @@ to, and what counters each.
   what the secret holds: an unknown word is named by its position, a
   word-list index out of range by its position, and a checksum, a
   padding or an Electrum version by what it is, never by its bits or its
-  hash (`tests/refusals_test.py`).
+  hash (`tests/refusals_test.py`). An unknown language or Electrum
+  version is not quoted, so an entropy or a sentence passed in its place
+  is not repeated.
 - **Type confusion (CWE-843).** mypy runs with `strict = true` over the
   package and the suite, as a hook of the lint gate.
 - **Code that is wrong and still passes.** Line and branch coverage is

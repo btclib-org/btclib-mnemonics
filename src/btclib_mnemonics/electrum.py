@@ -65,7 +65,7 @@ from functools import cache
 from hashlib import pbkdf2_hmac, sha256, sha512
 from pathlib import Path
 
-from btclib_mnemonics._utils import assert_type
+from btclib_mnemonics._utils import assert_type, utf8_bytes
 from btclib_mnemonics.entropy import (
     BinStr,
     Entropy,
@@ -278,7 +278,9 @@ def _is_old_mnemonic(mnemonic: Mnemonic) -> bool:
 
 
 def _seed_version(mnemonic: Mnemonic) -> str:
-    return hmac.new(b"Seed version", _normalize(mnemonic).encode(), sha512).hexdigest()
+    return hmac.new(
+        b"Seed version", utf8_bytes(_normalize(mnemonic), "mnemonic"), sha512
+    ).hexdigest()
 
 
 def _is_bip39_mnemonic(mnemonic: Mnemonic, lang: str) -> bool:
@@ -483,7 +485,7 @@ def mnemonic_from_entropy(
     so the mnemonic is the one Electrum returns for that entropy.
     """
     if mnemonic_type not in _MNEMONIC_VERSIONS:
-        err_msg = f"unknown electrum mnemonic version: '{mnemonic_type}'; "
+        err_msg = "unknown electrum mnemonic version; "
         err_msg += f"not in {list(_MNEMONIC_VERSIONS.keys())}"
         raise BTClibMnemonicsValueError(err_msg)
 
@@ -584,8 +586,8 @@ def seed_from_mnemonic(mnemonic: Mnemonic, passphrase: str) -> bytes:
         raise BTClibMnemonicsValueError(err_msg)
 
     hf_name = "sha512"
-    password = mnemonic.encode()
-    salt = f"electrum{_normalize(passphrase)}".encode()
+    password = utf8_bytes(mnemonic, "mnemonic")
+    salt = utf8_bytes(f"electrum{_normalize(passphrase)}", "passphrase")
     iterations = 2048
     dksize = 64
     return pbkdf2_hmac(hf_name, password, salt, iterations, dksize)

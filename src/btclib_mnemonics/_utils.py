@@ -13,7 +13,8 @@ which nothing here passes.
 
 A copy can drift from its original with every gate green, so
 `tests/utils_test.py` runs both on one table of inputs and asks them for
-the same answer, or for a refusal from the same built-in class.
+the same answer, or for a refusal from the same built-in class. `utf8_bytes`
+is this package's own and has no original.
 """
 
 from __future__ import annotations
@@ -30,6 +31,7 @@ __all__ = [
     "assert_type",
     "bytes_from_octets",
     "is_integer",
+    "utf8_bytes",
 ]
 
 #: Bytes, or the hex-string that decodes to them, wherever raw bytes are
@@ -96,6 +98,22 @@ def is_integer(value: Any) -> bool:
     subclass excluded, and by name.
     """
     return isinstance(value, int) and not isinstance(value, bool)
+
+
+def utf8_bytes(text: str, what: str) -> bytes:
+    """Return the UTF-8 encoding of a str, refusing a lone surrogate.
+
+    A lone surrogate is a str no UTF-8 text holds, and arrives through
+    ``surrogateescape`` decoding. `str.encode` would raise a
+    `UnicodeEncodeError` carrying the whole text in its `object`, so the
+    refusal is the package's own and chains nothing.
+    """
+    try:
+        return text.encode()
+    except UnicodeEncodeError:
+        raise BTClibMnemonicsValueError(
+            f"invalid {what}: contains a lone surrogate"
+        ) from None
 
 
 def assert_type(value: Any, expected: Any, what: str) -> None:
