@@ -11,6 +11,13 @@ before upgrading, rather than a digit.
 
 ## v2026.10 (work in progress, not released yet)
 
+- **BIP39 refuses 512-bit entropy and 48-word mnemonics.** Pass at most
+  256 bits. Entropy over the largest size is refused rather than
+  truncated, in every scheme.
+- **SLIP-0039 refuses master secrets over 64 bytes and shares over 59
+  words.** The specification sets no maximum, and 64 bytes is the largest
+  BIP32 seed.
+
 ## v2026.9.29
 
 The first release of `btclib-mnemonics`: there is no earlier version of

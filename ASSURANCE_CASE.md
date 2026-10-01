@@ -64,7 +64,8 @@ vulnerabilities*:
 - whatever the terminal keeps of `entropy.collect_rolls`' dice
 - the cost a SLIP-0039 share's own header asks for: its iteration
   exponent, up to 15, sets the PBKDF2 work of recombination, as the
-  specification defines it
+  specification defines it; a share longer than a 512-bit secret needs is
+  refused, so its length adds no work
 - the operating system and the interpreter
 
 ## Trust boundaries

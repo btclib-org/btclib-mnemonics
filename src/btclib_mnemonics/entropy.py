@@ -175,10 +175,12 @@ def _bin_str_entropy_from_entropy(entr: Entropy, bits: OneOrMoreInt) -> BinStr:
     integer entropy is front-padded with zeros digits
     as much as necessary to satisfy the bit-size requirement.
 
-    In all cases if more bits than required are provided,
-    the leftmost ones are retained.
+    In all cases more bits than the largest allowed are refused: the
+    leftmost ones of an integer, which has no leading zeros, would be
+    biased towards a leading 1.
 
-    `_bits` is what the schemes pass: 128, 160, 192, 224, 256 or 512.
+    electrum passes `_bits` (128, 160, 192, 224, 256 or 512), and bip39
+    its own `_ENTROPY_BITS`.
     """
     if isinstance(entr, str):
         return _bin_str_entropy_from_str(entr, bits)
@@ -194,10 +196,7 @@ def _bin_str_entropy_from_bytes(bytes_entropy: Octets, bits: OneOrMoreInt) -> Bi
     Input entropy can be expressed as hex-string or bytes; it is never
     padded to satisfy the bit-size requirement.
 
-    If more bits than required are provided, the leftmost ones are
-    retained.
-
-    `_bits` is what the schemes pass: 128, 160, 192, 224, 256 or 512.
+    More bits than the largest allowed are refused.
     """
     bytes_entropy = bytes_from_octets(bytes_entropy)
 
@@ -208,25 +207,18 @@ def _bin_str_entropy_from_bytes(bytes_entropy: Octets, bits: OneOrMoreInt) -> Bi
     bits = sorted(set(bits))
 
     n_bits = len(bytes_entropy) * 8
-    n_bits = min(n_bits, bits[-1])
-
     if n_bits not in bits:
         err_msg = f"invalid number of bits: {n_bits} instead of {bits}"
         raise BTClibMnemonicsValueError(err_msg)
 
     int_entropy = int.from_bytes(bytes_entropy, byteorder="big", signed=False)
-    # only the leftmost bits will be retained
     return _bin_str_entropy_from_int(int_entropy, n_bits)
 
 
 def _bytes_entropy_from_str(bin_str_entropy: BinStr) -> bytes:
     """Return the binary-string entropy as bytes, left-padded to whole ones."""
     int_entropy = _int_from_bin_str(bin_str_entropy)
-    n_bits = len(bin_str_entropy)
-    if n_bits not in _bits:
-        err_msg = f"invalid number of bits: {n_bits} instead of {_bits}"
-        raise BTClibMnemonicsValueError(err_msg)
-    nbytes = (n_bits + 7) // 8
+    nbytes = (len(bin_str_entropy) + 7) // 8
     return int_entropy.to_bytes(nbytes, byteorder="big", signed=False)
 
 
@@ -237,12 +229,7 @@ def _bin_str_entropy_from_int(int_entropy: int | str, bits: OneOrMoreInt) -> Bin
     digits: binary after "0b", hex after "0x", and decimal otherwise,
     with only ASCII whitespace stripped around it. It is front-padded
     with zeros digits as much as necessary to satisfy the bit-size
-    requirement.
-
-    If more bits than required are provided, the leftmost ones are
-    retained.
-
-    `_bits` is what the schemes pass: 128, 160, 192, 224, 256 or 512.
+    requirement. More bits than the largest allowed are refused.
     """
     if isinstance(int_entropy, str):
         # `string.whitespace` is Bitcoin Core's IsSpace, where a bare
@@ -277,8 +264,8 @@ def _bin_str_entropy_from_int(int_entropy: int | str, bits: OneOrMoreInt) -> Bin
     bin_str = f"{int_entropy:b}"
     n_bits = len(bin_str)
     if n_bits > bits[-1]:
-        # only the leftmost bits are retained
-        return bin_str[: bits[-1]]
+        err_msg = f"invalid number of bits: {n_bits} instead of at most {bits[-1]}"
+        raise BTClibMnemonicsValueError(err_msg)
 
     # pad up to the next allowed bit length
     n_bits = next(v for v in bits if v >= n_bits)
@@ -291,10 +278,7 @@ def _bin_str_entropy_from_str(str_entropy: str, bits: OneOrMoreInt) -> BinStr:
     Input entropy must be expressed as raw entropy; it is never padded
     to satisfy the bit-size requirement.
 
-    If more bits than required are provided, the leftmost ones are
-    retained.
-
-    `_bits` is what the schemes pass: 128, 160, 192, 224, 256 or 512.
+    More bits than the largest allowed are refused.
     """
     _int_from_bin_str(str_entropy)
 
@@ -305,9 +289,6 @@ def _bin_str_entropy_from_str(str_entropy: str, bits: OneOrMoreInt) -> BinStr:
     bits = sorted(set(bits))
 
     n_bits = len(str_entropy)
-    if n_bits > bits[-1]:
-        # only the leftmost bits are retained
-        return str_entropy[: bits[-1]]
     if n_bits not in bits:
         err_msg = f"invalid number of bits: {n_bits} instead of {bits}"
         raise BTClibMnemonicsValueError(err_msg)
@@ -400,8 +381,8 @@ def bin_str_entropy_from_rolls(
     used; for a D20 dice, only rolls having value in [1-16] are used;
     etc.). Rolls can also be shuffled.
 
-    If more bits than required are provided, the leftmost ones are
-    retained.
+    If more bits than required are provided, the leftmost ones of the
+    rolls' own width, leading zeros included, are retained.
     """
     if not is_integer(bits):
         raise BTClibMnemonicsTypeError(f"invalid bits type: {type(bits).__name__}")
@@ -426,6 +407,7 @@ def bin_str_entropy_from_rolls(
         secrets.SystemRandom().shuffle(rolls)
 
     min_roll_number = math.ceil(bits / bits_per_roll)
+    n_used = 0
     i = 0
     for roll in rolls:
         # reject invalid rolls not in [1-dice_sides], naming the bound and
@@ -437,13 +419,17 @@ def bin_str_entropy_from_rolls(
         if 0 < roll <= base:
             i *= base
             i += roll - 1
+            n_used += 1
             min_roll_number -= 1
     if min_roll_number > 0:
         msg = f"too few rolls in the usable [1-{base}] range"
         msg += f", missing {min_roll_number} rolls"
         raise BTClibMnemonicsValueError(msg)
 
-    return _bin_str_entropy_from_int(i, bits)
+    # the leftmost bits of what was rolled, not of the number it spells:
+    # that has no leading zeros, and its first bit would be a 1 far more
+    # often than not
+    return f"{i:0{n_used * bits_per_roll}b}"[:bits]
 
 
 def bin_str_entropy_from_random(
@@ -459,6 +445,9 @@ def bin_str_entropy_from_random(
 
     - XOR-ed with CSPRNG system entropy
     - possibly hashed (if requested)
+
+    If more bits than required are provided, the leftmost ones are
+    retained, of the entropy and of the digest alike, zeros included.
     """
     if not is_integer(bits):
         raise BTClibMnemonicsTypeError(f"invalid bits type: {type(bits).__name__}")
@@ -478,9 +467,8 @@ def bin_str_entropy_from_random(
     i ^= secrets.randbits(bits)
 
     # hash the current entropy
+    max_bits = sha512().digest_size * 8
     if to_be_hashed:
-        hf = sha512()
-        max_bits = hf.digest_size * 8
         if bits > max_bits:
             err_msg = f"too many bits required: {bits}, max is {max_bits}"
             raise BTClibMnemonicsValueError(err_msg)
@@ -488,4 +476,6 @@ def bin_str_entropy_from_random(
         h512 = sha512(i.to_bytes(n_bytes, byteorder="big", signed=False)).digest()
         i = int.from_bytes(h512, byteorder="big", signed=False)
 
-    return _bin_str_entropy_from_int(i, bits)
+    # the leftmost bits of the digest or of the random draw at their own
+    # width, not of the number they spell, which has no leading zeros
+    return f"{i:0{max_bits if to_be_hashed else bits}b}"[:bits]

@@ -62,7 +62,6 @@ from btclib_mnemonics.entropy import (
     Entropy,
     _bin_str_entropy_from_entropy,
     _bin_str_entropy_from_wordlist_indexes,
-    _bits,
     _bytes_entropy_from_str,
     _wordlist_indexes_from_bin_str_entropy,
 )
@@ -96,6 +95,10 @@ _SEPARATORS = {"ja": "\u3000"}
 # asked for rather than assumed
 _BIP39_WORDLIST_LENGTH = 1 << 11
 
+# the entropy sizes of the table above, and the words they make
+_ENTROPY_BITS = 128, 160, 192, 224, 256
+_WORD_COUNTS = tuple((n + n // 32) // 11 for n in _ENTROPY_BITS)
+
 
 def _base(lang: str) -> int:
     """Return the word-list length of lang, which BIP39 requires to be 2048.
@@ -117,6 +120,18 @@ def _base(lang: str) -> int:
     return base
 
 
+def _assert_word_count(n_words: int) -> None:
+    """Refuse a sentence of a length BIP39 has no mnemonic for.
+
+    It is asked before the sentence is decoded, whose cost grows with the
+    square of the words.
+    """
+    if n_words not in _WORD_COUNTS:
+        err_msg = f"invalid mnemonic length: {n_words} words, "
+        err_msg += f"not in {list(_WORD_COUNTS)}"
+        raise BTClibMnemonicsValueError(err_msg)
+
+
 def _entropy_checksum(entropy: Entropy) -> tuple[BinStr, BinStr]:
     """Return the checksum of the binary string input entropy.
 
@@ -124,7 +139,7 @@ def _entropy_checksum(entropy: Entropy) -> tuple[BinStr, BinStr]:
     192, 224, or 256 bits. Leading zeros are considered genuine entropy,
     not redundant padding.
     """
-    bin_str_entropy = _bin_str_entropy_from_entropy(entropy, _bits)
+    bin_str_entropy = _bin_str_entropy_from_entropy(entropy, _ENTROPY_BITS)
     bytes_entropy = _bytes_entropy_from_str(bin_str_entropy)
 
     # 256-bit checksum
@@ -151,8 +166,9 @@ def mnemonic_from_entropy(entropy: Entropy | None = None, lang: str = "en") -> M
     In the case of integer, where leading zeros cannot be represented,
     if the bit length is not an allowed value, then the binary 0/1
     string is padded with leading zeros up to the next allowed bit
-    length; if the integer bit length is longer than the maximum length,
-    then only the leftmost bits are retained.
+    length.
+
+    Entropy longer than 256 bits is refused.
     """
     # not `not entropy`: entropy can be an int, and int 0 is a value to
     # convert, not a missing one -- only the empty *string* means that
@@ -242,6 +258,7 @@ def entropy_from_mnemonic(mnemonic: Mnemonic, lang: str | None = None) -> BinStr
     for the same reason.
     """
     mnemonic = normalize_mnemonic(mnemonic)
+    _assert_word_count(len(mnemonic.split()))
     lang = lang or lang_from_mnemonic(mnemonic)
     base = _base(lang)
     indexes = indexes_from_mnemonic(mnemonic, lang)

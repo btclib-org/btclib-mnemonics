@@ -49,7 +49,7 @@ def test_bip39() -> None:
     assert raw_entr == int(r, 2).to_bytes(size, byteorder="big", signed=False)
 
     wrong_mnemonic = f"{mnemonic} abandon"
-    err_msg = "invalid number of bits: "
+    err_msg = "invalid mnemonic length: 13 words"
     with pytest.raises(BTClibMnemonicsValueError, match=err_msg):
         bip39.entropy_from_mnemonic(wrong_mnemonic, lang)
 
@@ -417,3 +417,25 @@ def test_the_wordlist_has_to_be_bip39_sized() -> None:
     mnemonic = " ".join(WORDLISTS.wordlist("slip39")[:12])
     with pytest.raises(BTClibMnemonicsValueError, match=err_msg):
         bip39.entropy_from_mnemonic(mnemonic, "slip39")
+
+
+@pytest.mark.parametrize("n_bytes", [0, 15, 17, 33, 64, 100])
+def test_entropy_of_a_size_bip39_has_no_mnemonic_for_is_refused(n_bytes: int) -> None:
+    """Refuse the 512 bits of 48 words, and what is longer, not truncate it."""
+    with pytest.raises(BTClibMnemonicsValueError, match="invalid number of bits"):
+        bip39.mnemonic_from_entropy(bytes(range(n_bytes)) or "0", "en")
+
+
+@pytest.mark.parametrize("n_words", [0, 1, 11, 13, 14, 25, 48, 100_000])
+def test_a_word_count_bip39_has_no_mnemonic_for_is_refused_undecoded(
+    n_words: int, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Refuse the count before the words are looked up or decoded."""
+    decoded = lambda *_: pytest.fail("decoded")  # noqa: E731
+
+    monkeypatch.setattr("btclib_mnemonics.bip39.indexes_from_mnemonic", decoded)
+    monkeypatch.setattr("btclib_mnemonics.bip39.lang_from_mnemonic", decoded)
+    err_msg = f"invalid mnemonic length: {n_words} words"
+    for lang in (None, "en"):
+        with pytest.raises(BTClibMnemonicsValueError, match=err_msg):
+            bip39.entropy_from_mnemonic(" ".join(["abandon"] * n_words), lang)

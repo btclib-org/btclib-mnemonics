@@ -135,6 +135,23 @@ tree's, *Model* names only the model, and the draft-pull-request bullet names
 `SECURITY.md` gives the date of the latest security review and links the issue
 that records it (issue btclib-org/.github#1362).
 
+### BIP39 refuses 512-bit entropy and 48-word mnemonics
+
+A 512-bit entropy or a 48-word mnemonic is refused, which breaks callers
+that pass either (closes #16). A word count outside 12, 15, 18, 21 and 24
+is refused before any word is decoded (closes #20).
+
+### Entropy longer than the largest size is refused, not truncated
+
+This holds in every scheme, Electrum's included, which breaks callers that
+pass more (closes #15). Dice rolls and the CSPRNG keep the leftmost bits
+at their own width, leading zeros included, so their first bit is unbiased.
+
+### SLIP-0039 secrets are 16 to 64 bytes and mnemonics 20 to 59 words
+
+Longer ones are refused, before any word is decoded for a mnemonic, which
+breaks callers that pass them (closes #19).
+
 ## v2026.9.29
 
 ### The repository opens
