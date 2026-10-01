@@ -457,7 +457,7 @@ def test_recovery_refuses_a_falsy_passphrase_of_another_type(
         slip39.master_secret_from_mnemonics(shares, passphrase)  # type: ignore[arg-type]
 
 
-@pytest.mark.parametrize("n_bytes", [0, 14, 17])
+@pytest.mark.parametrize("n_bytes", [0, 14, 17, 65, 66, 4096])
 def test_invalid_secret_length(n_bytes: int) -> None:
     """Refuse master secrets and share values of invalid length."""
     err_msg = f"invalid master secret length: {n_bytes} bytes"
@@ -585,3 +585,26 @@ def test_shares_that_are_no_sequence() -> None:
     generator = (share for share in shares)
     with pytest.raises(BTClibMnemonicsTypeError, match="invalid mnemonics type: gen"):
         slip39.master_secret_from_mnemonics(generator)  # type: ignore[arg-type]
+
+
+def test_the_largest_secret_is_a_512_bit_seed() -> None:
+    """Round-trip the longest master secret, whose share is the longest."""
+    master_secret = bytes(range(64))
+    ((mnemonic,),) = slip39.mnemonics_from_master_secret(
+        master_secret, iteration_exponent=0
+    )
+    assert len(mnemonic.split()) == slip39._MAX_WORDS
+    assert slip39.master_secret_from_mnemonics([mnemonic]) == master_secret
+
+
+@pytest.mark.parametrize("n_words", [0, 1, 19, 60, 12_807, 100_000])
+def test_a_share_of_a_length_slip39_has_no_share_for_is_refused_undecoded(
+    n_words: int, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Refuse the word count before the words are looked up or decoded."""
+    decoded = lambda *_: pytest.fail("decoded")  # noqa: E731
+
+    monkeypatch.setattr("btclib_mnemonics.slip39.indexes_from_mnemonic", decoded)
+    err_msg = f"invalid mnemonic length: {n_words} words"
+    with pytest.raises(BTClibMnemonicsValueError, match=err_msg):
+        slip39.share_from_mnemonic(" ".join(["academic"] * n_words))

@@ -101,11 +101,18 @@ _MAX_SHARE_COUNT = 1 << _FIELD_BITS
 
 # the master secret must be at least 128 bits and a multiple of 16 bits
 _MIN_SECRET_BYTES = 16
+# and at most 512, the largest seed BIP32 takes. The specification sets no
+# maximum; without one, a share costs a decoder time quadratic in its words
+_MAX_SECRET_BYTES = 64
 
 # the shortest mnemonic: the header, the checksum, and the smallest
 # share value padded up to a whole number of words -- 128 bits in 13
 _MIN_VALUE_WORDS = -(-8 * _MIN_SECRET_BYTES // _RADIX_BITS)
 _MIN_WORDS = (_HEADER_BITS + _CHECKSUM_BITS) // _RADIX_BITS + _MIN_VALUE_WORDS
+
+# the longest mnemonic: the same, for the largest secret
+_MAX_VALUE_WORDS = -(-8 * _MAX_SECRET_BYTES // _RADIX_BITS)
+_MAX_WORDS = (_HEADER_BITS + _CHECKSUM_BITS) // _RADIX_BITS + _MAX_VALUE_WORDS
 
 # the x coordinates SLIP-0039 reserves; 255 rather than the usual 0 so
 # that no share index has to be rejected as invalid
@@ -234,9 +241,9 @@ def _rs1024_verify(indexes: Sequence[int], extendable: bool) -> bool:
 
 
 def _assert_valid_length(n_bytes: int, what: str) -> None:
-    if n_bytes < _MIN_SECRET_BYTES or n_bytes % 2:
+    if not _MIN_SECRET_BYTES <= n_bytes <= _MAX_SECRET_BYTES or n_bytes % 2:
         err_msg = f"invalid {what} length: {n_bytes} bytes; "
-        err_msg += f"must be at least {_MIN_SECRET_BYTES} and even"
+        err_msg += f"must be even, from {_MIN_SECRET_BYTES} to {_MAX_SECRET_BYTES}"
         raise BTClibMnemonicsValueError(err_msg)
 
 
@@ -326,12 +333,13 @@ def share_from_mnemonic(mnemonic: Mnemonic) -> Share:
     """
     assert_type(mnemonic, str, "mnemonic")
     mnemonic = " ".join(mnemonic.split())
-    indexes = _indexes_from_mnemonic(mnemonic)
-    n_words = len(indexes)
-    if n_words < _MIN_WORDS:
+    # before the words are decoded, which costs the square of their number
+    n_words = len(mnemonic.split())
+    if not _MIN_WORDS <= n_words <= _MAX_WORDS:
         err_msg = f"invalid mnemonic length: {n_words} words, "
-        err_msg += f"at least {_MIN_WORDS} needed"
+        err_msg += f"from {_MIN_WORDS} to {_MAX_WORDS} needed"
         raise BTClibMnemonicsValueError(err_msg)
+    indexes = _indexes_from_mnemonic(mnemonic)
 
     bits = _bin_str_entropy_from_wordlist_indexes(indexes, 1 << _RADIX_BITS)
     # the flag is read before the checksum is verified, being what says
@@ -677,7 +685,7 @@ def mnemonics_from_master_secret(
     groups is one (member threshold, member count) pair per group, and
     group_threshold is how many groups are needed; the default is the
     single 1-of-1 share a wallet starts with. The master secret is the
-    BIP32 seed to back up, at least 128 bits and a multiple of 16.
+    BIP32 seed to back up, 128 to 512 bits and a multiple of 16.
 
     entropy_source is where every random byte comes from -- the
     identifier, the free coefficients of each polynomial and the

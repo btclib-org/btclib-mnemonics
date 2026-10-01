@@ -141,24 +141,26 @@ def test_conversions() -> None:
 
     max_bits = max(_bits)
 
-    raw = "10" + "11111111" * (max_bits // 8)
-    assert _bin_str_entropy_from_entropy(raw, _bits) == _bin_str_entropy_from_entropy(
-        raw[:-2], _bits
-    )
+    # more than the largest size is refused, whatever its spelling: the
+    # leftmost bits of a number are not the leftmost bits of what was
+    # meant, which had leading zeros the number does not
+    too_long = "10" + "11111111" * (max_bits // 8)
+    for entr in (
+        too_long,
+        int(too_long, 2),
+        int(too_long, 2).to_bytes(max_bits // 8 + 1, byteorder="big"),
+    ):
+        with pytest.raises(BTClibMnemonicsValueError, match="invalid number of bits"):
+            _bin_str_entropy_from_entropy(entr, _bits)
 
     # entr integer has its leftmost bit set to 0
     i = 1 << max_bits - 1
     bin_str_entropy = _bin_str_entropy_from_entropy(i, _bits)
     assert len(bin_str_entropy) == max_bits
 
-    # entr integer has its leftmost bit set to 1
-    i = 1 << max_bits
-    bin_str_entropy = _bin_str_entropy_from_entropy(i, _bits)
-    assert len(bin_str_entropy) == max_bits
-
-    exp_i = i >> 1
-    i = int(bin_str_entropy, 2)
-    assert i == exp_i
+    # one bit over
+    with pytest.raises(BTClibMnemonicsValueError, match="invalid number of bits"):
+        _bin_str_entropy_from_entropy(1 << max_bits, _bits)
 
     i = secrets.randbits(255)
     raw = _bin_str_entropy_from_int(i, _bits)
@@ -175,9 +177,8 @@ def test_conversions() -> None:
     assert int(raw2, 2) == i
     assert len(raw2) == 255
     assert _bin_str_entropy_from_str(f"0{raw2}", _bits) == raw
-    raw2 = _bin_str_entropy_from_str(raw, 128)
-    assert len(raw2) == 128
-    assert raw2 == raw[:128]
+    with pytest.raises(BTClibMnemonicsValueError, match="invalid number of bits"):
+        _bin_str_entropy_from_str(raw, 128)
 
 
 def test_exceptions() -> None:
@@ -218,8 +219,8 @@ def test_exceptions() -> None:
     assert str(excinfo.value) == "negative entropy"
 
     bytes_entropy216 = int_entropy211.to_bytes(27, byteorder="big", signed=False)
-    entropy = _bin_str_entropy_from_entropy(bytes_entropy216, 214)
-    assert entropy == bin_str_entropy214
+    with pytest.raises(BTClibMnemonicsValueError, match="invalid number of bits"):
+        _bin_str_entropy_from_entropy(bytes_entropy216, 214)
 
     entropy = _bin_str_entropy_from_entropy(bytes_entropy216, 216)
     assert entropy != bin_str_entropy216
@@ -241,10 +242,8 @@ def test_exceptions() -> None:
     with pytest.raises(BTClibMnemonicsTypeError, match="invalid entropy type: int"):
         _bin_str_entropy_from_str(3, _bits)  # type: ignore[arg-type]
 
-    err_msg = "invalid number of bits: "
-    with pytest.raises(BTClibMnemonicsValueError, match=err_msg):
-        bin_str_entropy = "01" * 65  # 130 bits
-        _bytes_entropy_from_str(bin_str_entropy)
+    # 130 bits are 17 bytes, left-padded
+    assert _bytes_entropy_from_str("01" * 65) == int("01" * 65, 2).to_bytes(17, "big")
 
 
 # 2 input failures, then automatic rolls with default D6
@@ -499,6 +498,40 @@ def test_rolls_of_another_type(
     """Refuse what is no number of bits, no sequence, or no integer roll."""
     with pytest.raises(BTClibMnemonicsTypeError, match=err_msg):
         bin_str_entropy_from_rolls(bits, 2, rolls, shuffle=shuffle)
+
+
+def test_rolls_keep_the_leftmost_bits_of_what_was_rolled() -> None:
+    """Truncate at the rolls' width: a leading roll of 0 is entropy.
+
+    43 rolls of a D8 are 129 bits, one more than is asked. A first digit
+    of 0 is three zero bits, and the leftmost 128 of them start with all
+    three; truncating the number they spell would start at its first 1.
+    """
+    rolls = [1] + [8] * 42
+    expected = ("000" + "111" * 42)[:128]
+    assert bin_str_entropy_from_rolls(128, 8, rolls, shuffle=False) == expected
+
+
+class _Digest:
+    """Stand in for a sha512 whose digest starts with zeros."""
+
+    digest_size = 64
+
+    def __init__(self, _data: bytes = b"") -> None:
+        pass
+
+    def digest(self) -> bytes:
+        return bytes(8) + bytes([255]) * 56
+
+
+def test_random_keeps_the_leftmost_bits_of_the_digest(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Truncate the digest at its 512 bits: its leading zeros are entropy."""
+    monkeypatch.setattr("btclib_mnemonics.entropy.sha512", _Digest)
+    assert bin_str_entropy_from_random(128) == "0" * 64 + "1" * 64
+    assert bin_str_entropy_from_random(511) == "0" * 64 + "1" * 447
+    assert bin_str_entropy_from_random(512) == "0" * 64 + "1" * 448
 
 
 def test_bin_str_entropy_from_random() -> None:

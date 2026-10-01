@@ -966,11 +966,12 @@ def test_portuguese_word_count() -> None:
     # every one of its words is in electrum's list and the sentence is in
     # no other, which is what lets the language go unnamed
     assert electrum.lang_from_mnemonic(mnemonic) == "pt"
-    # BIP39's portuguese is another word-list, and cannot read it
+    # BIP39's portuguese is another word-list, and cannot read it; twelve
+    # words, because thirteen is refused before any word is looked up
     with pytest.raises(
         BTClibMnemonicsValueError, match="unknown 'pt' word at position 1$"
     ):
-        bip39.entropy_from_mnemonic(mnemonic, "pt")
+        bip39.entropy_from_mnemonic(" ".join(mnemonic.split()[:12]), "pt")
 
 
 def test_portuguese_random_word_count(monkeypatch: pytest.MonkeyPatch) -> None:
