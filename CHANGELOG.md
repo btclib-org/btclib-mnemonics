@@ -119,6 +119,11 @@ The shared section *The primary checkout is the maintainer's* replaces this
 tree's, *Model* names only the model, and the draft-pull-request bullet names
 `codeql: every job passed` too (issue btclib-org/.github#1494).
 
+### `Dependency review` is a required check
+
+- **`REPOSITORY.md` reads `lint / Dependency review` back with the other
+  required checks** (issue btclib-org/.github#1465).
+
 ## v2026.9.29
 
 ### The repository opens
