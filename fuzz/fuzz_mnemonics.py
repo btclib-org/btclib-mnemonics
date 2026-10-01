@@ -2,7 +2,7 @@
 # Distributed under the MIT software license, see the accompanying
 # LICENSE file or https://opensource.org/license/mit for the full text.
 
-"""An atheris harness fuzzing the three mnemonic decoders.
+"""An atheris harness fuzzing every decoder that reads a mnemonic.
 
 A SLIP-0039 share is handed back by whoever held it, and SLIP-0039's
 threshold is there because some of those holders may be compromised:
@@ -13,6 +13,10 @@ take the same input: `bip39.entropy_from_mnemonic` and
 `electrum.version_from_mnemonic` both read the words, the latter
 hashing the sentence and testing it against the pre-2.0 word-list
 first.
+
+Every other decoder `tests/fuzz_test.py` lists is called on the same
+text: the language, entropy, seed, master key and word index readers, and
+the recombination of shares, which takes one share per line.
 
 A crash here on hostile input is a defect in the decoder, never in this
 harness: `data` is decoded as UTF-8 and handed straight to each entry
@@ -34,7 +38,7 @@ import sys
 
 import atheris
 
-from btclib_mnemonics import bip39, electrum, slip39
+from btclib_mnemonics import bip39, electrum, mnemonic, slip39
 from btclib_mnemonics.exceptions import BTClibMnemonicsException
 from btclib_mnemonics.mnemonic import normalize_mnemonic
 
@@ -64,6 +68,24 @@ def fuzz_target(data: bytes) -> None:
         bip39.entropy_from_mnemonic(text)
     with contextlib.suppress(BTClibMnemonicsException):
         electrum.version_from_mnemonic(text)
+    with contextlib.suppress(BTClibMnemonicsException):
+        bip39.lang_from_mnemonic(text)
+    with contextlib.suppress(BTClibMnemonicsException):
+        electrum.entropy_from_mnemonic(text)
+    with contextlib.suppress(BTClibMnemonicsException):
+        electrum.lang_from_mnemonic(text)
+    with contextlib.suppress(BTClibMnemonicsException):
+        electrum.hex_seed_from_old_mnemonic(text)
+    with contextlib.suppress(BTClibMnemonicsException):
+        bip39.seed_from_mnemonic(text, "")
+    with contextlib.suppress(BTClibMnemonicsException):
+        electrum.seed_from_mnemonic(text, "")
+    with contextlib.suppress(BTClibMnemonicsException):
+        electrum.old_master_prv_key_from_mnemonic(text)
+    with contextlib.suppress(BTClibMnemonicsException):
+        mnemonic.indexes_from_mnemonic(text, "en")
+    with contextlib.suppress(BTClibMnemonicsException):
+        slip39.master_secret_from_mnemonics(text.split("\n"))
     with contextlib.suppress(BTClibMnemonicsException):
         share = slip39.share_from_mnemonic(text)
         if slip39.mnemonic_from_share(share) != normalize_mnemonic(text):

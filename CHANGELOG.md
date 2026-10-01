@@ -158,6 +158,11 @@ A lone surrogate, an unreadable word-list file and a bad `WordLists` or
 `wordlists` argument are refused as the two exceptions. No refusal quotes an
 unknown `lang` or `mnemonic_type` (closes #17, closes #18, closes #22).
 
+### The fuzz harness calls every decoder `tests/fuzz_test.py` lists
+
+`fuzz/fuzz_mnemonics.py` calls each decoder in `DECODERS`, a test holds the
+two together, and recombination is driven with valid shares (closes #23).
+
 ## v2026.9.29
 
 ### The repository opens
