@@ -330,7 +330,7 @@ wheels = [
 
 [[package]]
 name = "btclib-mnemonics"
-version = "2026.9.29"
+version = "2026.10.2"
 source = { editable = "." }
 
 [package.dev-dependencies]
