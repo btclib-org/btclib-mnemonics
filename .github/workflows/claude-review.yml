@@ -4,8 +4,8 @@ name: claude-review
 # Claude reading a pull request against REVIEWING.md, which is the standard
 # a review here is written against: section 11 of the organization's
 # standard makes this workflow's verdict the ack of record, and a tree
-# whose schemes sign with a caller's private keys wants a reading before a
-# merge.
+# that handles a caller's entropy, mnemonics and seeds wants a reading
+# before a merge.
 # The prompt, the credential guard, the action, the verdict check and the
 # @claude answer are `btclib-org/.github`'s `reusable-claude-review.yml`,
 # called at `@main` so a fix there reaches this tree in one landing. What
