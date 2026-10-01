@@ -169,6 +169,12 @@ two together, and recombination is driven with valid shares (closes #23).
 `Signed-off-by:` trailer, and how to add it (issue
 btclib-org/.github#1467).
 
+### The primary-checkout section uses one form for the checkout
+
+- **The section writes the checkout as `"${checkout:?}"` throughout, says
+  what `<scratchpad>` is and names the pull** (issue
+  btclib-org/.github#1500).
+
 ## v2026.9.29
 
 ### The repository opens
