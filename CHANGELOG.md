@@ -43,6 +43,11 @@ is the caller's (issue #24).
 comments that said every job passes it no longer do
 (btclib-org/btclib#2440, issue #25).
 
+### The verification command pins the tag for every signer
+
+SECURITY.md and RELEASING.md said a `reusable-attest.yml` release took no
+`--source-ref`; it takes the tag (issue #25, btclib-org/btclib#2447).
+
 ## v2026.10.2
 
 ### `REPOSITORY.md` records what each read-back answers
