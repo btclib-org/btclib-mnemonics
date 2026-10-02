@@ -23,7 +23,7 @@
 # has, where `latest` is exempt from it. What the tag resolves to now is
 # the `Docker-Content-Digest` response header on
 # `gcr.io/v2/oss-fuzz-base/base-builder-python/manifests/latest`.
-FROM gcr.io/oss-fuzz-base/base-builder-python:latest@sha256:58f80c90a90944b68b8e70b98e38997ee9396225311cfb0f3aea78671446ab4e
+FROM gcr.io/oss-fuzz-base/base-builder-python:latest@sha256:1de9e4ac301ddea42b8846480d5e4903580ed5071357c9173a4d26a4af65a6fa
 
 COPY . $SRC/btclib-mnemonics
 WORKDIR $SRC/btclib-mnemonics
