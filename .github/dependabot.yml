@@ -46,7 +46,7 @@ updates:
     cooldown:
       default-days: 7
 
-  # uv.lock is committed and the workflows install from it with --locked,
+  # uv.lock is committed and the jobs that install from it pass --locked,
   # while the dependency groups declare a floor and no ceiling: the drift
   # of the test dependencies and the tooling above those floors lives
   # in the lock file, and this is the only thing that moves it. The

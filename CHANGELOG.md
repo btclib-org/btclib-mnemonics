@@ -37,6 +37,12 @@ stands in (issue btclib-org/.github#1527).
 `entropy_source` a caller passes to `slip39.mnemonics_from_master_secret`
 is the caller's (issue #24).
 
+### `CONTRIBUTING.md` lists the jobs that do not pass `--locked`
+
+`CONTRIBUTING.md` lists the jobs that install without `--locked`, and the
+comments that said every job passes it no longer do
+(btclib-org/btclib#2440, issue #25).
+
 ## v2026.10.2
 
 ### `REPOSITORY.md` records what each read-back answers
