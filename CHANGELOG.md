@@ -25,6 +25,12 @@ driver that would keep both sides' numbers.
 
 ## v2026.11 (work in progress, not released yet)
 
+### `CONTRIBUTING.md` says the maintainer self-merges while the bot review is off
+
+*The review* says no ack of record exists while `claude-review.yml` is off,
+and that a local review of a named sha, by a reviewer other than the author,
+stands in (issue btclib-org/.github#1527).
+
 ## v2026.10.2
 
 ### `REPOSITORY.md` records what each read-back answers
