@@ -42,7 +42,9 @@ file whose name they could take, or because the upstream name is taken:
 Where an entry pins to a commit, it gives the upstream repository, the
 path in it, and the commit. A `blob` line, where the entry carries one,
 gives the git blob SHA-1 of what that entry pins; what it pins, and
-whether it was compared byte for byte, is the entry's own to say. Most
+whether it was compared byte for byte, is the entry's own to say. An
+`ours` line gives the blob of the file kept here where that is not the
+`blob`: a file with its trailing newline or its whitespace changed. Most
 entries close on a verdict; one with nothing upstream to compare against
 says so in prose instead. The verdicts used:
 
@@ -81,8 +83,16 @@ gh api "repos/trezor/python-shamir-mnemonic/git/trees/${commit:?}" \
 
 The comparison is on git blob SHA-1, not sha256: it is what a tree entry
 already carries, so nothing has to be downloaded, and `git hash-object`
-reproduces it locally. `.github/workflows/vendored-vectors.yml` runs that
-comparison's other half, whether upstream moved past the pin, weekly.
+reproduces it locally.
+
+`.github/workflows/vendored-vectors.yml` runs weekly, for every entry
+whose heading is one file's path and which carries a `blob` or an `ours`
+line. It holds the file to `ours` (or `blob`), holds `blob` to upstream's
+at `commit`, and fails, naming the file, on a mismatch: a file edited here
+and a pin whose blob is not the one at its commit both fail. It also
+reports an entry whose upstream moved past the pin. Add an `ours` line to
+a new entry whose file is not upstream's bytes, and a `-text` line for the
+file to `.gitattributes`.
 
 ## bitcoin/bips
 
@@ -140,6 +150,7 @@ repo    bip32JP/bip32JP.github.io
 path    test_JP_BIP39.json
 commit  360c05a6439e5c461bbe5e84c7567ec38eb4ac5f  2017-08-20
 blob    6d8c40b19e5d4b899f9f3c2addbf994d150b245b
+ours    4e7efab9ced430060a6646c77770cd387203b757
 pulled  2026-08-02
 behind  0 revisions; that commit is the tip of the path
 ```
@@ -209,6 +220,7 @@ repo    trezor/python-shamir-mnemonic
 path    vectors.json
 commit  1525df19df504b1f69b49179140119959f317f24  2024-05-14
 blob    d98c387aa1feb32ca9e6e4410cff870dfc6fb358
+ours    2e6da291bdb7824d032e7962a4020f2a8bff9fa6
 pulled  2026-08-02
 behind  0 revisions; that commit is the tip of the path
 ```
@@ -309,11 +321,12 @@ Pulled 2018-06-01.
   sentence it *generates* from a given entropy. Ours were produced by
   running its code, which is a procedure to repeat rather than a revision
   to pin, and the entry above gives it.
-- **Nothing here is enforced by the suite.** No test compares a blob,
-  and that is a deliberate stopping point: a network call in the test
-  suite would trade a documented drift for a flaky one. The weekly
-  `vendored-vectors` workflow asks upstream instead, and opens an issue on
-  drift.
+- **The suite asks upstream for nothing.** It hashes each pinned file
+  offline, against the `ours` or `blob` its entry records, and that is a
+  deliberate stopping point: a network call in the test suite would trade
+  a documented drift for a flaky one. The weekly `vendored-vectors`
+  workflow asks upstream instead: a byte mismatch fails the run, and a pin
+  that moved opens an issue.
 
 ## Summary
 

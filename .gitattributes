@@ -46,3 +46,14 @@
 # path the tree does not hold matches nothing.
 CHANGELOG.md merge=union
 RELEASE_NOTES.md merge=union
+
+# The vendored files `tests/_data/README.md` names are held to a git blob
+# SHA-1 over their committed bytes, which `check_vendored_vectors.py` and
+# its test read straight off the disk. `-text` is what keeps a checkout
+# with `core.autocrlf=true` (Git for Windows' default) from converting
+# them, so those bytes are the ones on disk on every platform.
+src/btclib_mnemonics/_data/wordlist.txt -text
+tests/_data/bip39_test_vectors.json -text
+tests/_data/english.txt -text
+tests/_data/test_JP_BIP39.json -text
+tests/_data/vectors.json -text
