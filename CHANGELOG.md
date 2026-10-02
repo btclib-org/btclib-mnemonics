@@ -48,6 +48,12 @@ comments that said every job passes it no longer do
 SECURITY.md and RELEASING.md said a `reusable-attest.yml` release took no
 `--source-ref`; it takes the tag (issue #25, btclib-org/btclib#2447).
 
+### The weekly vendored-vectors check compares the vendored bytes
+
+`check_vendored_vectors.py` holds each vendored file to the ledger's `ours`,
+or `blob` where there is none, and `blob` to upstream's at the pinned commit;
+a mismatch fails the run (btclib-org/btclib#2439, issue #25).
+
 ## v2026.10.2
 
 ### `REPOSITORY.md` records what each read-back answers
