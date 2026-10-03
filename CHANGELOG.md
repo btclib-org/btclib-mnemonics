@@ -60,6 +60,12 @@ The publish jobs, `github-release` and `test.yml`'s `dist` job on a release
 stop where the `dist` they download differs from the digests
 `reusable-build.yml` outputs (issue #25, btclib-org/btclib#2449).
 
+### `dependabot.yml` does not say that every workflow passes `--locked`
+
+`.github/dependabot.yml` says the workflows install from `uv.lock` with
+`--locked`, bar the exceptions `CONTRIBUTING.md` lists (issue
+btclib-org/.github#1538).
+
 ## v2026.10.2
 
 ### `REPOSITORY.md` records what each read-back answers
