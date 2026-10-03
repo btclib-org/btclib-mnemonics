@@ -54,6 +54,12 @@ SECURITY.md and RELEASING.md said a `reusable-attest.yml` release took no
 or `blob` where there is none, and `blob` to upstream's at the pinned commit;
 a mismatch fails the run (btclib-org/btclib#2439, issue #25).
 
+### The release publishes the files the build job built
+
+The publish jobs, `github-release` and `test.yml`'s `dist` job on a release
+stop where the `dist` they download differs from the digests
+`reusable-build.yml` outputs (issue #25, btclib-org/btclib#2449).
+
 ## v2026.10.2
 
 ### `REPOSITORY.md` records what each read-back answers
