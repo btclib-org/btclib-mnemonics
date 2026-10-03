@@ -89,6 +89,12 @@ setting section 11 of the standard states (issue btclib-org/.github#1540).
 bypass, and that the ack of record is a bot's, so the OpenSSF criterion
 `two_person_review` is unmet (issue btclib-org/.github#452).
 
+### The maintainer's bypass is for emergencies only
+
+Every pull request lands with an approving review from somebody other than
+its author, in `CONTRIBUTING.md`, `RELEASING.md` and `REPOSITORY.md`
+(issue btclib-org/.github#1362).
+
 ## v2026.10.2
 
 ### `REPOSITORY.md` records what each read-back answers

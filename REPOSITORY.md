@@ -207,8 +207,10 @@ JSON
 
 `main-self-merge` requires a pull request, with the maintainer as the
 only bypass actor and in **`pull_request` mode**, which excuses the
-approving review a solo-maintainer repository cannot produce and nothing
-else: a direct push to `main` is refused for everyone.
+approving review and nothing else: a direct push to `main` is refused for
+everyone. The ruleset sets no condition on the bypass; the maintainer
+uses it only in an emergency, and every other pull request lands with an
+approving review from somebody other than its author.
 
 ```shell
 gh api -X POST repos/btclib-org/btclib-mnemonics/rulesets --input - <<'JSON'
