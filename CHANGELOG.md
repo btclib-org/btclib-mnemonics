@@ -83,6 +83,12 @@ setting section 11 of the standard states (issue btclib-org/.github#1540).
 `Signed-off-by:` trailer cannot merge, and `REPOSITORY.md` lists
 `lint / Sign-off` among the required checks (issue btclib-org/.github#1550).
 
+### `CONTRIBUTING.md` says the bot's review is the ack of record
+
+*The review* says the maintainer lands their own pull requests through the
+bypass, and that the ack of record is a bot's, so the OpenSSF criterion
+`two_person_review` is unmet (issue btclib-org/.github#452).
+
 ## v2026.10.2
 
 ### `REPOSITORY.md` records what each read-back answers
