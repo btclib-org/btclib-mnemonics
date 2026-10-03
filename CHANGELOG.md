@@ -91,9 +91,15 @@ bypass, and that the ack of record is a bot's, so the OpenSSF criterion
 
 ### The maintainer's bypass is for emergencies only
 
-Every pull request lands with an approving review from somebody other than
-its author, in `CONTRIBUTING.md`, `RELEASING.md` and `REPOSITORY.md`
-(issue btclib-org/.github#1362).
+`CONTRIBUTING.md`, `RELEASING.md`, `REPOSITORY.md` and `REVIEWING.md` say every
+pull request lands with an approving review from somebody other than its
+author; the bypass is for emergencies (issue btclib-org/.github#1362).
+
+### Earlier entries on how a pull request lands
+
+Entries above that have the maintainer landing without another person's
+approval describe the rule before issue btclib-org/.github#1362 (issue
+btclib-org/.github#1569).
 
 ## v2026.10.2
 
