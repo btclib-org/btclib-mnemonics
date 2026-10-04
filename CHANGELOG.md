@@ -118,6 +118,12 @@ because uv can answer from a cached index and miss a version just published
 required checks too, and `REVIEWING.md`'s "hold the merge" excepts it
 (issue btclib-org/.github#1597).
 
+### The attestation bundle's name is in the release notes
+
+RELEASE_NOTES.md gives the bundle's name, `v<version>.intoto.jsonl`.
+RELEASING.md asks that a change to a release's assets or their verification
+be named there (issue btclib-org/.github#1596).
+
 ## v2026.10.2
 
 ### `REPOSITORY.md` records what each read-back answers

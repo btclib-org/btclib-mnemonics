@@ -11,6 +11,11 @@ before upgrading, rather than a digit.
 
 ## v2026.11 (work in progress, not released yet)
 
+- **The attestation bundle is attached as `v<version>.intoto.jsonl`** from
+  v2026.10.2 on, where earlier releases attach
+  `v<version>.attestation.jsonl`. A script that downloads it by name, or
+  passes it to `gh attestation verify --bundle`, uses the new name.
+
 ## v2026.10.2
 
 - **BIP39 refuses 512-bit entropy and 48-word mnemonics.** Pass at most
