@@ -20,8 +20,7 @@ which say what a user has to act on; this file is the record behind them.
 [std]: https://github.com/btclib-org/.github
 
 Neither file states how many entries it holds: a stated number is a line
-every open branch has to edit, and the two files carry a union merge
-driver that would keep both sides' numbers.
+every open branch has to edit.
 
 ## v2026.11 (work in progress, not released yet)
 
@@ -100,6 +99,12 @@ author; the bypass is for emergencies (issue btclib-org/.github#1362).
 Entries above that have the maintainer landing without another person's
 approval describe the rule before issue btclib-org/.github#1362 (issue
 btclib-org/.github#1569).
+
+### Forms set a type, `merge=union` goes, bestpractices.dev is reviewed
+
+The issue forms set `type:` and no kind label (issue btclib-org/.github#1584),
+the history files lose `merge=union` (issue btclib-org/.github#1582), and
+RELEASING.md reviews bestpractices.dev (issue btclib-org/.github#1589).
 
 ## v2026.10.2
 
