@@ -106,6 +106,12 @@ The issue forms set `type:` and no kind label (issue btclib-org/.github#1584),
 the history files lose `merge=union` (issue btclib-org/.github#1582), and
 RELEASING.md reviews bestpractices.dev (issue btclib-org/.github#1589).
 
+### The post-release install refreshes the index
+
+RELEASING.md installs the release with `--refresh-package btclib-mnemonics`,
+because uv can answer from a cached index and miss a version just published
+(issue btclib-org/.github#1595).
+
 ## v2026.10.2
 
 ### `REPOSITORY.md` records what each read-back answers
