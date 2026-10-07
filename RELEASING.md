@@ -322,8 +322,8 @@ result.
    the next cycle's section.
 
    A `(work in progress, not released yet)` section, where one remains,
-   predates that rule; the next release's pull request folds it into the
-   release's section and deletes the heading.
+   is folded into the release's section by its pull request, which
+   deletes the heading.
 
 1. Set the version in `pyproject.toml`, which is the one place it is
    declared, to the date the release is cut, `YYYY.M.D`, and re-lock so
