@@ -10,17 +10,14 @@
   }
 -->
 
-An entry for anything a reader would notice: what changed, and the issue
-it answers. That is section 9 of [the organization standard][std], and it
-is narrower than "every change" — a comment reworded inside a workflow
-changes nothing a reader of this repository meets, and lands without an
-entry. [RELEASE_NOTES.md](./RELEASE_NOTES.md) has the release notes,
-which say what a user has to act on; this file is the record behind them.
+The release's own pull request writes its section here, from the squash
+subjects since the previous tag; a pull request adds no entry
+(`CONTRIBUTING.md`'s *Pull requests*, section 9 of [the organization
+standard][std]). [RELEASE_NOTES.md](./RELEASE_NOTES.md) has the release
+notes, which say what a user has to act on; this file is the record
+behind them.
 
 [std]: https://github.com/btclib-org/.github
-
-Neither file states how many entries it holds: a stated number is a line
-every open branch has to edit.
 
 ## v2026.11 (work in progress, not released yet)
 
