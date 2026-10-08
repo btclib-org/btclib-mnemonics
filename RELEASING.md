@@ -387,8 +387,8 @@ result.
 1. Run each dependent's suite with this release in place of its PyPI
    version, whether or not the notes declare a break. Section 12 of the
    [organization standard](https://github.com/btclib-org/.github#12-releasing)
-   has the rule. The dependents of `btclib-mnemonics` are
-   `btclib-wallet`. Re-derive them with the loop in that section
+   has the rule. The one dependent of `btclib-mnemonics` is
+   `btclib-wallet`. Re-derive it with the loop in that section
    before each release rather than carry this list.
 
    From a throwaway checkout of each dependent's default branch, with the
