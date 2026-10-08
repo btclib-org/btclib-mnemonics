@@ -111,9 +111,10 @@ def utf8_bytes(text: str, what: str) -> bytes:
     try:
         return text.encode()
     except UnicodeEncodeError:
-        raise BTClibMnemonicsValueError(
-            f"invalid {what}: contains a lone surrogate"
-        ) from None
+        pass
+    # raised outside the except: inside it, the error would stay in
+    # __context__ even with "from None"
+    raise BTClibMnemonicsValueError(f"invalid {what}: contains a lone surrogate")
 
 
 def assert_type(value: Any, expected: Any, what: str) -> None:
