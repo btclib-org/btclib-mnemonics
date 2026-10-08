@@ -9,8 +9,19 @@ number says when a release was cut, and promises nothing about
 compatibility, so a breaking change is announced in this file — read it
 before upgrading, rather than a digit.
 
-## v2026.11 (work in progress, not released yet)
+## v2026.10.8
 
+- **A mnemonic or passphrase holding a lone surrogate is no longer kept whole
+  on the error**
+  ([GHSA-qjpp-8mp6-7744](https://github.com/btclib-org/btclib-mnemonics/security/advisories/GHSA-qjpp-8mp6-7744)).
+  `bip39.seed_from_mnemonic`, and `electrum`'s `seed_from_mnemonic`,
+  `version_from_mnemonic` and `entropy_from_mnemonic`, kept the whole
+  mnemonic or passphrase in a `UnicodeEncodeError` when it held a lone
+  surrogate: 2026.10.2 in the refusal's `__context__`, 2026.9.29 as the error
+  raised, which `dispatch.seed_type_from_mnemonic` and
+  `dispatch.all_seed_types_from_mnemonic` raised too. Upgrade, and treat a
+  mnemonic or passphrase that such an error may have recorded, in a log or an
+  error report, as exposed.
 - **The attestation bundle is attached as `v<version>.intoto.jsonl`** from
   v2026.10.2 on, where earlier releases attach
   `v<version>.attestation.jsonl`. A script that downloads it by name, or
