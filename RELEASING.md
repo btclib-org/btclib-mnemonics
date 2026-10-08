@@ -384,6 +384,33 @@ result.
    site that answers 200 may be serving the last build that succeeded,
    the webhook having quietly refused every delivery since.
 
+1. Run each dependent's suite with this release in place of its PyPI
+   version, whether or not the notes declare a break. Section 12 of the
+   [organization standard](https://github.com/btclib-org/.github#12-releasing)
+   has the rule. The dependents of `btclib-mnemonics` are
+   `btclib-wallet`. Re-derive them with the loop in that section
+   before each release rather than carry this list.
+
+   From a throwaway checkout of each dependent's default branch, with the
+   sha of the release pull request's head for `<sha>`, before it merges:
+
+   ```shell
+   ref=git+https://github.com/btclib-org/btclib-mnemonics@<sha>
+   ```
+
+   ```shell
+   uv run --locked --no-default-groups --group test \
+     --with "btclib-mnemonics @ ${ref:?}" \
+     python -m pytest --no-cov
+   ```
+
+   It is `python -m pytest`, not `pytest`: that script is the environment's
+   own and imports the locked version. `--no-cov` because the question is
+   pass or fail, not the dependent's coverage floor.
+
+   A dependent that fails gets its fix ready first. The release is tagged,
+   then the dependent releases with its floor raised to it.
+
 1. Merge it, with the button, the way every other pull request here
    lands.
 
@@ -471,6 +498,19 @@ result.
    with nothing uploaded, which is the guard doing its job; the `git show`
    above is the same check one step earlier, where it costs nothing, and
    the chain is what makes the push wait on it.
+
+1. Read the tag's signature back from the API, now that it is pushed. It
+   answers `true`: an unsigned annotated tag answers `false`, and a
+   lightweight tag answers 404 at the second call. `version` is the one
+   set above:
+
+   ```shell
+   tagsha=$(gh api \
+     repos/btclib-org/btclib-mnemonics/git/refs/tags/"v${version:?}" \
+     --jq '.object.sha') &&
+   gh api repos/btclib-org/btclib-mnemonics/git/tags/"${tagsha:?}" \
+     --jq '.verification.verified'
+   ```
 
 1. Approve the `pypi` environment when the workflow asks. Up to here
    nothing is public and the tag can still be deleted; the upload that
