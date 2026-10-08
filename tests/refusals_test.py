@@ -350,7 +350,12 @@ def test_a_lone_surrogate_is_refused_as_a_value_error(
         BTClibMnemonicsValueError, match=f"^invalid {what}: contains a lone surrogate$"
     ) as excinfo:
         call()
-    assert excinfo.value.__suppress_context__
+    assert excinfo.value.__context__ is None
+    assert excinfo.value.__cause__ is None
+    shown = repr(excinfo.value)
+    assert "udcff" not in shown
+    assert "abandon" not in shown
+    assert "pw" not in shown
 
 
 def test_dispatch_answers_a_lone_surrogate() -> None:
