@@ -19,7 +19,12 @@ behind them.
 
 [std]: https://github.com/btclib-org/.github
 
-## v2026.11 (work in progress, not released yet)
+## v2026.10.8
+
+### The shared halves of `CONTRIBUTING.md` and `REVIEWING.md` are `.github`'s
+
+The author resolves an answered thread; the reviewer reopens one only while
+it blocks (issue btclib-org/.github#1620, issue btclib-org/.github#1634).
 
 ### `CONTRIBUTING.md` says the maintainer self-merges while the bot review is off
 
@@ -32,6 +37,15 @@ stands in (issue btclib-org/.github#1527).
 `SECURITY.md` names `os.urandom` beside `secrets`, and says a weak
 `entropy_source` a caller passes to `slip39.mnemonics_from_master_secret`
 is the caller's (issue #24).
+
+### `claude-review.yml`'s header says what the tree handles
+
+The header says the tree handles a caller's entropy, mnemonics and seeds
+(closes #24).
+
+### Open 2026.11: the declared version has no day
+
+The declared version is the month alone while a cycle is in progress (#47).
 
 ### `CONTRIBUTING.md` lists the jobs that do not pass `--locked`
 
@@ -125,6 +139,22 @@ be named there (issue btclib-org/.github#1596).
 
 A `###` heading under a release older than the newest, absent at the merge
 base with `origin/main`, is refused (issue btclib-org/.github#1614).
+
+### The pinned versions move
+
+The pre-commit hook revisions (btclib-org/.github, ruff, pydoclint, uv) and
+the `oss-fuzz-base/base-builder-python` image are bumped (#51, #55, #66).
+
+### `CONTRIBUTING.md` and `REVIEWING.md` follow the changelog at release time
+
+A pull request adds no `CHANGELOG.md` or `RELEASE_NOTES.md` entry; the
+release's own pull request writes the section. The forms, the template and
+`RELEASING.md` follow (issue btclib-org/.github#1623, closes #68).
+
+### `utf8_bytes` raises its refusal outside the `except` block
+
+A mnemonic or passphrase refused for a lone surrogate is no longer kept in
+the refusal's `__context__` (GHSA-qjpp-8mp6-7744, #70).
 
 ## v2026.10.2
 
